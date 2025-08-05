@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model images {
+  id       String  @id @default(uuid())
+  file_id  String
+  url      String
+  userId   String? @unique
+  users    users?  @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model users {
+  id        String   @id @default(uuid())
+  name      String?
+  email     String   @unique
+  following String[] // stored as a text[] array in PostgreSQL
+  avatar    images?  @relation(fields: [imageId], references: [id])
+  imageId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([imageId])
+}

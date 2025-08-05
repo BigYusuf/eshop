@@ -5,17 +5,21 @@
     "emitDeclarationOnly": true,
     "importHelpers": true,
     "isolatedModules": true,
+    "baseUrl": ".",
     "lib": ["es2022"],
     "module": "nodenext",
-    "moduleResolution": "nodenext",
+    "moduleResolution": "node16",
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
+    "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
     "target": "es2022",
+    "paths": { "@packages/*": ["packages/*"] },
+    "esModuleInterop": true,
     "customConditions": ["development"]
   }
 }
