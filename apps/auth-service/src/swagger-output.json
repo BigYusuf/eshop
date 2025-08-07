@@ -6,12 +6,12 @@
     "version": "1.0.0"
   },
   "host": "localhost:5100",
-  "basePath": "/api/auth",
+  "basePath": "/api",
   "schemes": [
     "http"
   ],
   "paths": {
-    "/user-register": {
+    "/auth/user-register": {
       "post": {
         "description": "",
         "parameters": [
@@ -41,7 +41,7 @@
         }
       }
     },
-    "/user-verify": {
+    "/auth/user-verify": {
       "post": {
         "description": "",
         "parameters": [
@@ -73,6 +73,33 @@
         "responses": {
           "201": {
             "description": "Created"
+          }
+        }
+      }
+    },
+    "/auth/user-login": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "password": {
+                  "example": "any"
+                },
+                "email": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }

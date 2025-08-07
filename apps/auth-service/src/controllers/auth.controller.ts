@@ -2,6 +2,7 @@
 
 import { NextFunction, Request, Response } from "express";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import {
   checkOtpRestrictions,
   sendOtp,
@@ -10,8 +11,8 @@ import {
   verifyOtp,
 } from "../utils/auth.helper";
 import { User } from "@./db";
-import { ValidationError } from "../../../../packages/error-handler";
-
+import { AuthError, ValidationError } from "../../../../packages/error-handler";
+import { setCookie } from "../utils/cookies/setCookie";
 
 export const userRegister = async (
   req: Request,
@@ -71,6 +72,62 @@ export const userVerify = async (
     res
       .status(201)
       .json({ success: true, message: "User registered successfully!" });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const userLogin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { password, email } = req.body;
+    if (!email || !password) {
+      return next(new ValidationError("Email and Password are required!"));
+    }
+    const existingUser = await User.findOne({ where: { email } });
+
+    if (!existingUser) {
+      return next(new AuthError("Invalid Credential!"));
+    }
+    //verify paassword if user exist
+
+    const isMatch = await bcrypt.compare(password, existingUser?.password);
+    if (!isMatch) {
+      return next(new AuthError("Invalid Credential!"));
+    }
+    //generate access & refresh token
+    const accessToken = jwt.sign(
+      { id: existingUser?.id, role: "user" },
+      process.env.ACCESS_TOKEN_SECRET as string,
+      {
+        expiresIn: "15m",
+      }
+    );
+
+    const refreshToken = jwt.sign(
+      { id: existingUser?.id, role: "user" },
+      process.env.REFRESH_TOKEN_SECRET as string,
+      {
+        expiresIn: "7d",
+      }
+    );
+    //store refresh & access token in httpOnly secure cookie
+    setCookie(res, "refreshToken", refreshToken);
+    setCookie(res, "accessToken", accessToken);
+
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      user: {
+        id: existingUser?.id,
+        email: existingUser?.email,
+        firstName: existingUser?.firstName,
+        lastName: existingUser?.lastName,
+      },
+    });
   } catch (error) {
     return next(error);
   }
