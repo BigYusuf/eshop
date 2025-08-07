@@ -12,11 +12,13 @@ export class User extends Model<
   InferAttributes<User>,
   InferCreationAttributes<User>
 > {
-  declare id: string;
-  declare name?: string;
+ declare id: CreationOptional<string>;
+  declare firstName?: string;
+  declare lastName?: string;
   declare email: string;
-  declare following: string[];
-  declare imageId: string;
+  declare password: string;
+  declare following?: string[];
+  declare imageId?: string;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 
@@ -28,16 +30,15 @@ export class User extends Model<
           primaryKey: true,
           defaultValue: DataTypes.UUIDV4,
         },
-        name: DataTypes.STRING,
+        firstName: DataTypes.STRING,
+        lastName: DataTypes.STRING,
+        password: { type: DataTypes.STRING, allowNull: false },
         email: { type: DataTypes.STRING, unique: true, allowNull: false },
         following: {
           type: DataTypes.ARRAY(DataTypes.STRING),
           defaultValue: [],
         },
-        imageId: {
-          type: DataTypes.UUID,
-          allowNull: false,
-        },
+        imageId: DataTypes.STRING,
         createdAt: {
           type: DataTypes.DATE,
           defaultValue: DataTypes.NOW,

@@ -21,14 +21,14 @@
             "schema": {
               "type": "object",
               "properties": {
-                "name": {
-                  "example": "John Doe"
+                "firstName": {
+                  "example": "any"
+                },
+                "lastName": {
+                  "example": "any"
                 },
                 "email": {
-                  "example": "johndoe@gmail.com"
-                },
-                "password": {
-                  "example": "Password1234@"
+                  "example": "any"
                 }
               }
             }
@@ -40,6 +40,43 @@
           }
         }
       }
+    },
+    "/user-verify": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "otp": {
+                  "example": "any"
+                },
+                "firstName": {
+                  "example": "any"
+                },
+                "lastName": {
+                  "example": "any"
+                },
+                "email": {
+                  "example": "any"
+                },
+                "password": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        }
+      }
     }
-  }
+  },
+  "baseUrl": "auth"
 }

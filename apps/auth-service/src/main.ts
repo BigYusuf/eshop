@@ -20,7 +20,6 @@ app.use(
 );
 app.use(express.json());
 app.use(cookieParser());
-app.use(errorMiddleware);
 app.get("/", (req, res) => {
   res.send({ message: "Hello API" });
 });
@@ -34,6 +33,8 @@ app.get("/docs-json", (req, res) => {
 
 //Routes
 app.use("/api/auth/", authroute);
+
+app.use(errorMiddleware);
 
 const server = app.listen(port, () => {
   console.log(`Auth service is running at http://localhost:${port}/api`);
