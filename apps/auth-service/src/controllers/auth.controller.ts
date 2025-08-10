@@ -5,9 +5,11 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import {
   checkOtpRestrictions,
+  handleForgotPass,
   sendOtp,
   trackOtpRequests,
   validateRegisterData,
+  verifyForgotPasswordOtp,
   verifyOtp,
 } from "../utils/auth.helper";
 import { User } from "@./db";
@@ -83,7 +85,7 @@ export const userLogin = async (
   next: NextFunction
 ) => {
   try {
-    const { password, email } = req.body;
+    const { email, password } = req.body;
     if (!email || !password) {
       return next(new ValidationError("Email and Password are required!"));
     }
@@ -130,5 +132,65 @@ export const userLogin = async (
     });
   } catch (error) {
     return next(error);
+  }
+};
+
+export const userForgotPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { userType } = req.body;
+  const uType = userType || "user";
+  handleForgotPass(res, req, next, uType);
+};
+
+export const verifyUserPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  await verifyForgotPasswordOtp(res, req, next);
+};
+
+export const userResetPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return next(new ValidationError("Email and new Password are required!"));
+    }
+    const existingUser = await User.findOne({ where: { email } });
+
+    if (!existingUser) {
+      return next(new ValidationError(`User not found`));
+    }
+    //compare new password with existing password
+    const isSamePass = await bcrypt.compare(password, existingUser?.password);
+
+    if (isSamePass) {
+      return next(
+        new ValidationError(
+          `New password cannot be the same as the old password!`
+        )
+      );
+    }
+    //hash the new password
+
+    const hashPassword = await bcrypt.hash(password, 10);
+
+    await User.update(
+      { password: hashPassword },
+      { where: { email } } // or `id` or any other unique identifier
+    );
+
+    res
+      .status(200)
+      .json({ success: true, message: "Password reset successfully!" });
+  } catch (error) {
+    next(error);
   }
 };

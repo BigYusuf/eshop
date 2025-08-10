@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import { ValidationError } from "../../../../packages/error-handler";
-import { NextFunction } from "express";
-import { redis } from "@./db";
+import { NextFunction, Request, Response } from "express";
+import { redis, User } from "@./db";
 import { sendEmail } from "./sendMail";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -98,4 +98,61 @@ export const verifyOtp = async (email: string, otp: string): Promise<void> => {
 
   // On success, delete OTP and failed attempts
   await redis.del(`otp:${email}`, failedAttemptsKey);
+};
+
+export const handleForgotPass = async (
+  res: Response,
+  req: Request,
+  next: NextFunction,
+  uType: "user" | "seller" | "admin"
+) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      throw new ValidationError("Email is required!");
+    }
+    const existingUser =
+      uType === "user" && (await User.findOne({ where: { email } }));
+
+    if (!existingUser) {
+      throw new ValidationError(`${uType} not found`);
+    }
+    //Check otp restrictions
+    await checkOtpRestrictions(email);
+    await trackOtpRequests(email);
+    
+    //generate Otp and send Email
+    await sendOtp(
+      existingUser?.firstName as string,
+      email,
+      // uType === "user" && "forgot-password-user-mail"
+      "forgot-password-user-mail"
+    );
+    res.status(200).json({
+      success: true,
+      message: "OTP sent to email. Please verify your account.",
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+export const verifyForgotPasswordOtp = async (
+  res: Response,
+  req: Request,
+  next: NextFunction
+) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+      throw new ValidationError("Email and OTP are required!");
+    }
+    await verifyOtp(email, otp);
+
+    res.status(200).json({
+      success: true,
+      message: "OTP verified. You can now reset your password.",
+    });
+  } catch (error) {
+    return next(error);
+  }
 };

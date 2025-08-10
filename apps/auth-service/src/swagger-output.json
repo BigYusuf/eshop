@@ -6,12 +6,12 @@
     "version": "1.0.0"
   },
   "host": "localhost:5100",
-  "basePath": "/api",
+  "basePath": "/api/auth/",
   "schemes": [
     "http"
   ],
   "paths": {
-    "/auth/user-register": {
+    "/user-register": {
       "post": {
         "description": "",
         "parameters": [
@@ -41,7 +41,7 @@
         }
       }
     },
-    "/auth/user-verify": {
+    "/user-verify": {
       "post": {
         "description": "",
         "parameters": [
@@ -77,7 +77,7 @@
         }
       }
     },
-    "/auth/user-login": {
+    "/user-login": {
       "post": {
         "description": "",
         "parameters": [
@@ -87,10 +87,10 @@
             "schema": {
               "type": "object",
               "properties": {
-                "password": {
+                "email": {
                   "example": "any"
                 },
-                "email": {
+                "password": {
                   "example": "any"
                 }
               }
@@ -100,6 +100,67 @@
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      }
+    },
+    "/forgot-password-user": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userType": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/reset-password-user": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "example": "any"
+                },
+                "password": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/verify-forgot-password-user": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
           }
         }
       }
