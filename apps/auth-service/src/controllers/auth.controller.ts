@@ -2,7 +2,7 @@
 
 import { NextFunction, Request, Response } from "express";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import jwt, { JsonWebTokenError } from "jsonwebtoken";
 import {
   checkOtpRestrictions,
   handleForgotPass,
@@ -132,6 +132,57 @@ export const userLogin = async (
     });
   } catch (error) {
     return next(error);
+  }
+};
+
+export const refreshTokenAuth = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) {
+      return next(new ValidationError("Unauthorized! No refresh token."));
+    }
+    const decoded = jwt.verify(
+      refreshToken,
+      process.env.REFRESH_TOKEN_SECRET as string
+    ) as { id: string; role: string };
+
+    if (!decoded || !decoded.id || !decoded.role) {
+      return next(new JsonWebTokenError("Forbidden! Invalid refresh token."));
+    }
+    // let account;
+    // if (decoded.role === "user") {
+    //   account = await User.findOne({ where: { id: decoded?.id } });
+    // }
+    const user = await User.findOne({ where: { id: decoded?.id } });
+    if (!user) {
+      return next(new AuthError("Forbidden! User/Seller not found"));
+    }
+    const newAccessToken = jwt.sign(
+      { id: decoded?.id, role: decoded?.role },
+      process?.env?.ACCESS_TOKEN_SECRET as string,
+      { expiresIn: "15m" }
+    );
+    setCookie(res, "accessToken", newAccessToken);
+    return res.status(201).json({ success: true });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+//get logged in user
+export const getUser = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    const user = req.user;
+
+    res
+      .status(201)
+      .json({ success: true, message: "User data fetched!", user });
+  } catch (error) {
+    next(error);
   }
 };
 
