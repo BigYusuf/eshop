@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import { ValidationError } from "../../../../packages/error-handler";
 import { NextFunction, Request, Response } from "express";
-import { redis, User } from "@./db";
+import { redis, Seller, User } from "@./db";
 import { sendEmail } from "./sendMail";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -10,14 +10,14 @@ export const validateRegisterData = (
   data: any,
   userType: "user" | "seller" | "admin" | "manager" | "editor" | "staff"
 ) => {
-  const { firstName, lastName, email, country, phone_number } = data;
+  const { firstName,password, lastName, email, country, phoneNumber } = data;
 
   if (
     !firstName ||
     !lastName ||
     !email ||
-    // !password ||
-    (userType === "seller" && (!phone_number || !country))
+    !password ||
+    (userType === "seller" && (!phoneNumber || !country))
   ) {
     throw new ValidationError("Missing required fields!");
   }
@@ -112,7 +112,9 @@ export const handleForgotPass = async (
       throw new ValidationError("Email is required!");
     }
     const existingUser =
-      uType === "user" && (await User.findOne({ where: { email } }));
+      uType === "user"
+        ? await User.findOne({ where: { email } })
+        : await Seller.findOne({ where: { email } });
 
     if (!existingUser) {
       throw new ValidationError(`${uType} not found`);
@@ -120,13 +122,14 @@ export const handleForgotPass = async (
     //Check otp restrictions
     await checkOtpRestrictions(email);
     await trackOtpRequests(email);
-    
+
     //generate Otp and send Email
     await sendOtp(
       existingUser?.firstName as string,
       email,
-      // uType === "user" && "forgot-password-user-mail"
-      "forgot-password-user-mail"
+      uType === "user"
+        ? "forgot-password-user-mail"
+        : "forgot-password-seller-mail"
     );
     res.status(200).json({
       success: true,

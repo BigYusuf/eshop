@@ -7,22 +7,25 @@ import {
   CreationOptional,
 } from "sequelize";
 
-export class User extends Model<
-  InferAttributes<User>,
-  InferCreationAttributes<User>
+export class Seller extends Model<
+  InferAttributes<Seller>,
+  InferCreationAttributes<Seller>
 > {
- declare id: CreationOptional<string>;
+  declare id: CreationOptional<string>;
   declare firstName?: string;
   declare lastName?: string;
   declare email: string;
   declare password: string;
-  declare following?: string[];
+  declare phoneNumber: string;
+  declare accountId?: string;
+  declare country?: string;
   // declare imageId?: string;
+  declare shopId?: string;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 
   static initModel(sequelize: Sequelize) {
-    User.init(
+    Seller.init(
       {
         id: {
           type: DataTypes.UUID,
@@ -33,11 +36,19 @@ export class User extends Model<
         lastName: DataTypes.STRING,
         password: { type: DataTypes.STRING, allowNull: false },
         email: { type: DataTypes.STRING, unique: true, allowNull: false },
-        following: {
-          type: DataTypes.ARRAY(DataTypes.STRING),
-          defaultValue: [],
-        },
+        phoneNumber: { type: DataTypes.STRING, allowNull: false },
         // imageId: DataTypes.STRING,
+        shopId: {
+          type: DataTypes.UUID,
+          allowNull: true,
+          references: {
+            model: "shops",
+            key: "id",
+          },
+          onDelete: "CASCADE",
+        },
+        accountId: DataTypes.STRING,
+        country: DataTypes.STRING,
         createdAt: {
           type: DataTypes.DATE,
           defaultValue: DataTypes.NOW,
@@ -49,7 +60,7 @@ export class User extends Model<
       },
       {
         sequelize,
-        tableName: "users",
+        tableName: "sellers",
         timestamps: true,
       }
     );

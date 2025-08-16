@@ -4,17 +4,21 @@ import {
   Sequelize,
   InferAttributes,
   InferCreationAttributes,
-  //   CreationOptional,
+  CreationOptional,
+  ForeignKey,
 } from "sequelize";
 
 export class Image extends Model<
   InferAttributes<Image>,
   InferCreationAttributes<Image>
 > {
-  declare id: string;
-  declare file_id: string;
+  declare id: CreationOptional<string>;
+  declare fileId: string;
   declare url: string;
-  declare userId?: string;
+
+  declare shopId?: ForeignKey<string>;
+  declare sellerId?: ForeignKey<string>;
+  declare userId?: ForeignKey<string>;
 
   static initModel(sequelize: Sequelize) {
     Image.init(
@@ -24,12 +28,40 @@ export class Image extends Model<
           primaryKey: true,
           defaultValue: DataTypes.UUIDV4,
         },
-        file_id: DataTypes.STRING,
-        url: DataTypes.STRING,
+        fileId: {
+          type: DataTypes.STRING,
+          allowNull: false,
+        },
+        url: {
+          type: DataTypes.STRING,
+          allowNull: false,
+        },
+        shopId: {
+          type: DataTypes.UUID,
+          allowNull: true,
+          references: {
+            model: "shops",
+            key: "id",
+          },
+          onDelete: "CASCADE",
+        },
+        sellerId: {
+          type: DataTypes.UUID,
+          allowNull: true,
+          references: {
+            model: "sellers", // or "users" if seller is part of user table
+            key: "id",
+          },
+          onDelete: "CASCADE",
+        },
         userId: {
           type: DataTypes.UUID,
           allowNull: true,
-          unique: true,
+          references: {
+            model: "users",
+            key: "id",
+          },
+          onDelete: "CASCADE",
         },
       },
       {

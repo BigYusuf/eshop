@@ -12,7 +12,7 @@ import {
   verifyForgotPasswordOtp,
   verifyOtp,
 } from "../utils/auth.helper";
-import { User } from "@./db";
+import { User, Seller, Shop } from "@./db";
 import { AuthError, ValidationError } from "../../../../packages/error-handler";
 import { setCookie } from "../utils/cookies/setCookie";
 
@@ -241,6 +241,238 @@ export const userResetPassword = async (
     res
       .status(200)
       .json({ success: true, message: "Password reset successfully!" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// register new seller
+export const sellerRegister = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    validateRegisterData(req.body, "seller");
+    const { firstName, lastName, email } = req.body;
+
+    const existingSeller = await Seller.findOne({ where: { email } });
+
+    if (existingSeller) {
+      return next(
+        new ValidationError("Seller already exists with this email!")
+      );
+    }
+    const name = firstName + " " + lastName;
+    await checkOtpRestrictions(email);
+    await trackOtpRequests(email);
+    await sendOtp(name, email, "seller-activation-mail");
+
+    res.status(200).json({
+      success: true,
+      message: "OTP sent to email. Please verify your account.",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const sellerVerify = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { otp, firstName, lastName, email, password, phoneNumber, country } =
+      req.body;
+    if (
+      !email ||
+      !otp ||
+      !lastName ||
+      !firstName ||
+      !password ||
+      !country ||
+      !phoneNumber
+    ) {
+      return next(new ValidationError("All fields are required!"));
+    }
+    const existingSeller = await Seller.findOne({ where: { email } });
+
+    if (existingSeller) {
+      return next(
+        new ValidationError("Seller already exists with this email!")
+      );
+    }
+
+    await verifyOtp(email, otp);
+
+    const hashPassword = await bcrypt.hash(password, 10);
+
+    const seller = await Seller.create({
+      lastName,
+      firstName,
+      email,
+      country,
+      phoneNumber,
+      password: hashPassword,
+    });
+
+    res.status(201).json({
+      success: true,
+      seller,
+      message: "Seller registered successfully!",
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const createShop = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const {
+      description,
+      name,
+      address,
+      category,
+      openingHours,
+      closingHours,
+      sellerId,
+      website,
+    } = req.body;
+    if (
+      !category ||
+      !description ||
+      !address ||
+      !name ||
+      !openingHours ||
+      !closingHours ||
+      !sellerId
+    ) {
+      return next(new ValidationError("All fields are required!"));
+    }
+    const existingShop = await Shop.findOne({ where: { sellerId } });
+
+    if (existingShop) {
+      return next(new ValidationError("This Seller already has a Shop!"));
+    }
+    const shopData: any = {
+      description,
+      name,
+      address,
+      category,
+      openingHours,
+      closingHours,
+      sellerId,
+    };
+    if (website && website.trim() !== "") {
+      shopData.website = website;
+    }
+
+    const shop = await Shop.create(shopData);
+
+    res.status(201).json({
+      success: true,
+      shop,
+      message: "Shop created successfully!",
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const connectBank = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { sellerId } = req.body;
+
+    if (!sellerId) {
+      return next(new ValidationError("Seller ID is required"));
+    }
+    const existingShop = await Shop.findOne({ where: { id: sellerId } });
+
+    if (existingShop) {
+      return next(new ValidationError("Seller is not available with this id!"));
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const sellerLogin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return next(new ValidationError("Email and Password are required!"));
+    }
+    const existingSeller = await Seller.findOne({ where: { email } });
+
+    if (!existingSeller) {
+      return next(new AuthError("Invalid Credential!"));
+    }
+    //verify paassword if user exist
+
+    const isMatch = await bcrypt.compare(password, existingSeller?.password);
+    if (!isMatch) {
+      return next(new AuthError("Invalid Credential!"));
+    }
+    //generate access & refresh token
+    const accessToken = jwt.sign(
+      { id: existingSeller?.id, role: "seller" },
+      process.env.ACCESS_TOKEN_SECRET as string,
+      {
+        expiresIn: "15m",
+      }
+    );
+
+    const refreshToken = jwt.sign(
+      { id: existingSeller?.id, role: "seller" },
+      process.env.REFRESH_TOKEN_SECRET as string,
+      {
+        expiresIn: "7d",
+      }
+    );
+    //store refresh & access token in httpOnly secure cookie
+    setCookie(res, "sellerRefreshToken", refreshToken);
+    setCookie(res, "sellerAccessToken", accessToken);
+
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      user: {
+        id: existingSeller?.id,
+        email: existingSeller?.email,
+        firstName: existingSeller?.firstName,
+        lastName: existingSeller?.lastName,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+//get logged in user
+export const getSeller = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const seller = req.seller;
+
+    res
+      .status(201)
+      .json({ success: true, message: "Seller data fetched!", seller });
   } catch (error) {
     next(error);
   }
