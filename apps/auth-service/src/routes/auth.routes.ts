@@ -21,15 +21,17 @@ import {
 } from "../../../../packages/middleware/isAuthenticated";
 
 const authroute: Router = express.Router();
-
+//users
 authroute.post("/user-register", userRegister);
 authroute.post("/user-verify", userVerify);
 authroute.post("/user-login", userLogin);
-authroute.post("/user-refresh-token", refreshTokenAuth);
 authroute.get("/user-logged-in", isAuth, getUser);
 authroute.post("/forgot-password-user", userForgotPassword);
 authroute.post("/reset-password-user", userResetPassword);
 authroute.post("/verify-forgot-password-user", verifyUserPassword);
+
+//both users & sellers
+authroute.post("/refresh-token", refreshTokenAuth);
 
 //sellers
 authroute.post("/seller-register", sellerRegister);

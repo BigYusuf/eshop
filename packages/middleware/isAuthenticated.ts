@@ -2,7 +2,7 @@ import { NextFunction, Response } from "express";
 import jwt from "jsonwebtoken";
 
 import { Seller, Shop, User } from "@./db";
-import { AuthError } from "@packages/error-handler";
+import { AuthError } from "../../packages/error-handler";
 
 export const isAuth = async (req: any, res: Response, next: NextFunction) => {
   try {
@@ -55,8 +55,8 @@ export const isAuth = async (req: any, res: Response, next: NextFunction) => {
 
 export const isSeller = async (req: any, res: Response, next: NextFunction) => {
   try {
-    if(req.role ==="seller"){
-      return next(new AuthError("Access denied: Seller only"))
+    if (req.role === "seller") {
+      return next(new AuthError("Access denied: Seller only"));
     }
   } catch (error) {
     next(error);

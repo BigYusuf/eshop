@@ -94,13 +94,18 @@ export const userLogin = async (
     if (!existingUser) {
       return next(new AuthError("Invalid Credential!"));
     }
-    //verify paassword if user exist
-
+    
+    // Verify paassword if user exist
     const isMatch = await bcrypt.compare(password, existingUser?.password);
     if (!isMatch) {
       return next(new AuthError("Invalid Credential!"));
     }
-    //generate access & refresh token
+
+    // Clear seller tokens
+    res.clearCookie("sellerAccessToken");
+    res.clearCookie("sellerRefreshToken");
+
+    // Generate access & refresh token
     const accessToken = jwt.sign(
       { id: existingUser?.id, role: "user" },
       process.env.ACCESS_TOKEN_SECRET as string,
@@ -136,12 +141,16 @@ export const userLogin = async (
 };
 
 export const refreshTokenAuth = async (
-  req: Request,
+  req: any,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const refreshToken = req.cookies.refreshToken;
+    const refreshToken =
+      req.cookies["refreshToken"] ||
+      req.cookies["sellerRefreshToken"] ||
+      req.headers?.authorization?.split(" ")[1];
+
     if (!refreshToken) {
       return next(new ValidationError("Unauthorized! No refresh token."));
     }
@@ -153,12 +162,13 @@ export const refreshTokenAuth = async (
     if (!decoded || !decoded.id || !decoded.role) {
       return next(new JsonWebTokenError("Forbidden! Invalid refresh token."));
     }
-    // let account;
-    // if (decoded.role === "user") {
-    //   account = await User.findOne({ where: { id: decoded?.id } });
-    // }
-    const user = await User.findOne({ where: { id: decoded?.id } });
-    if (!user) {
+    let account;
+    if (decoded?.role === "user") {
+      account = await User.findOne({ where: { id: decoded?.id } });
+    } else if (decoded?.role === "seller") {
+      account = await Seller.findOne({ where: { id: decoded?.id } });
+    }
+    if (!account) {
       return next(new AuthError("Forbidden! User/Seller not found"));
     }
     const newAccessToken = jwt.sign(
@@ -166,7 +176,13 @@ export const refreshTokenAuth = async (
       process?.env?.ACCESS_TOKEN_SECRET as string,
       { expiresIn: "15m" }
     );
-    setCookie(res, "accessToken", newAccessToken);
+    if (decoded?.role === "user") {
+      setCookie(res, "accessToken", newAccessToken);
+    } else if (decoded?.role === "seller") {
+      setCookie(res, "sellerAccessToken", newAccessToken);
+    }
+    req.role = decoded?.role;
+
     return res.status(201).json({ success: true });
   } catch (error) {
     return next(error);
@@ -339,7 +355,6 @@ export const createShop = async (
       address,
       category,
       openingHours,
-      closingHours,
       sellerId,
       website,
     } = req.body;
@@ -349,7 +364,6 @@ export const createShop = async (
       !address ||
       !name ||
       !openingHours ||
-      !closingHours ||
       !sellerId
     ) {
       return next(new ValidationError("All fields are required!"));
@@ -365,7 +379,6 @@ export const createShop = async (
       address,
       category,
       openingHours,
-      closingHours,
       sellerId,
     };
     if (website && website.trim() !== "") {
@@ -426,6 +439,11 @@ export const sellerLogin = async (
     if (!isMatch) {
       return next(new AuthError("Invalid Credential!"));
     }
+
+    //clear user tokens
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+
     //generate access & refresh token
     const accessToken = jwt.sign(
       { id: existingSeller?.id, role: "seller" },

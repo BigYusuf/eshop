@@ -37,7 +37,7 @@ app.use("/api/auth/", authroute);
 app.use(errorMiddleware);
 
 const server = app.listen(port, () => {
-  console.log(`Auth service is running at http://localhost:${port}/api`);
+  console.log(`Auth service is running at http://localhost:${port}/api/auth`);
   console.log(`Swagger docs is available at http://localhost:${port}/api-docs`);
 });
 server.on("error", (error) => {
