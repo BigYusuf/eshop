@@ -1,13 +1,14 @@
 import express from "express";
 import cors from "cors";
-import { errorMiddleware } from "../../../packages/error-handler/error-middleware";
+// import { errorMiddleware } from "../../../packages/error-handler/error-middleware";
 import cookieParser from "cookie-parser";
-import authroute from "./routes/auth.routes";
+import { errorMiddleware } from "@packages/error-handler/error-middleware";
+import productRoute from "./routes/product.routes";
 import swaggerUi from "swagger-ui-express";
 const swaggerDoc = require("./swagger-output.json");
 
 // const host = process.env.HOST ?? 'localhost';
-const port = process.env.PORT ? Number(process.env.PORT) : 5100;
+const port = process.env.PORT ? Number(process.env.PORT) : 5200;
 
 const app = express();
 
@@ -21,7 +22,7 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 app.get("/", (req, res) => {
-  res.send({ message: "Hello API" });
+  res.send({ message: "Hello Product API" });
 });
 
 //docs
@@ -32,12 +33,12 @@ app.get("/docs-json", (req, res) => {
 });
 
 //Routes
-app.use("/api/auth/", authroute);
+app.use("/api/product/", productRoute);
 
 app.use(errorMiddleware);
 
 const server = app.listen(port, () => {
-  console.log(`Auth service is running at http://localhost:${port}/api/auth`);
+  console.log(`Product service is running at http://localhost:${port}/api/product`);
   console.log(`Swagger docs is available at http://localhost:${port}/api-docs`);
 });
 server.on("error", (error) => {

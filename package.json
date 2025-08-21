@@ -6,7 +6,9 @@
     "dev": "npx nx run-many --target=serve --all",
     "user-ui": "npx nx run-many --target=dev --all --projects=user-ui",
     "seller-ui": "npx nx run-many --target=dev --all --projects=seller-ui",
-    "auth-docs": "node apps/auth-service/src/swagger.js"
+    "auth-docs": "node apps/auth-service/src/swagger.js",
+    "product-docs": "node apps/product-service/src/swagger.js",
+    "reset": "npx nx reset cache"
   },
   "private": true,
   "dependencies": {
@@ -15,6 +17,7 @@
     "@tanstack/react-query": "^5.84.2",
     "axios": "^1.9.0",
     "bcryptjs": "^3.0.2",
+    "clsx": "^2.1.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
@@ -23,6 +26,7 @@
     "express-http-proxy": "^2.1.1",
     "express-rate-limit": "^7.5.0",
     "ioredis": "^5.6.1",
+    "jotai": "^2.13.1",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.539.0",
     "morgan": "^1.10.0",
@@ -35,7 +39,9 @@
     "react-dom": "19.0.0",
     "react-hook-form": "^7.62.0",
     "react-hot-toast": "^2.5.2",
+    "react-quill-new": "^3.6.0",
     "sequelize": "^6.37.7",
+    "styled-components": "^6.1.19",
     "swagger-autogen": "^2.23.7",
     "swagger-ui-express": "^5.0.1",
     "uuid": "^11.1.0"
