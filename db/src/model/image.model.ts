@@ -16,7 +16,7 @@ export class Image extends Model<
   declare fileId: string;
   declare url: string;
 
-  declare shopId?: ForeignKey<string>;
+  // Type-only declarations (not in init!)
   declare sellerId?: ForeignKey<string>;
   declare userId?: ForeignKey<string>;
 
@@ -36,33 +36,6 @@ export class Image extends Model<
           type: DataTypes.STRING,
           allowNull: false,
         },
-        shopId: {
-          type: DataTypes.UUID,
-          allowNull: true,
-          references: {
-            model: "shops",
-            key: "id",
-          },
-          onDelete: "CASCADE",
-        },
-        sellerId: {
-          type: DataTypes.UUID,
-          allowNull: true,
-          references: {
-            model: "sellers", // or "users" if seller is part of user table
-            key: "id",
-          },
-          onDelete: "CASCADE",
-        },
-        userId: {
-          type: DataTypes.UUID,
-          allowNull: true,
-          references: {
-            model: "users",
-            key: "id",
-          },
-          onDelete: "CASCADE",
-        },
       },
       {
         sequelize,
@@ -70,5 +43,23 @@ export class Image extends Model<
         timestamps: false,
       }
     );
+  }
+
+  static associate(models: any) {
+    Image.belongsTo(models.Seller, {
+      foreignKey: { allowNull: true },
+      onDelete: "CASCADE",
+    });
+
+    Image.belongsTo(models.User, {
+      foreignKey: { allowNull: true },
+      onDelete: "CASCADE",
+    });
+
+    Image.hasOne(models.Shop, { as: "shopLogo", foreignKey: "imageId" });
+    Image.hasOne(models.Shop, {
+      as: "shopBanner",
+      foreignKey: "bannerImageId",
+    });
   }
 }

@@ -17,10 +17,7 @@ export class Seller extends Model<
   declare email: string;
   declare password: string;
   declare phoneNumber: string;
-  declare accountId?: string;
   declare country?: string;
-  // declare imageId?: string;
-  declare shopId?: string;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 
@@ -37,17 +34,6 @@ export class Seller extends Model<
         password: { type: DataTypes.STRING, allowNull: false },
         email: { type: DataTypes.STRING, unique: true, allowNull: false },
         phoneNumber: { type: DataTypes.STRING, allowNull: false },
-        // imageId: DataTypes.STRING,
-        shopId: {
-          type: DataTypes.UUID,
-          allowNull: true,
-          references: {
-            model: "shops",
-            key: "id",
-          },
-          onDelete: "CASCADE",
-        },
-        accountId: DataTypes.STRING,
         country: DataTypes.STRING,
         createdAt: {
           type: DataTypes.DATE,
@@ -64,5 +50,13 @@ export class Seller extends Model<
         timestamps: true,
       }
     );
+  }
+  static associate(models: any) {
+    Seller.hasOne(models.Image, { as: "avatar", foreignKey: "sellerId" }); // auto-adds sellerId in images
+    Seller.hasOne(models.Shop, { as: "shop", foreignKey: "sellerId" });
+    Seller.hasMany(models.DiscountCode, {
+      as: "discount_codes",
+      foreignKey: "sellerId",
+    });
   }
 }

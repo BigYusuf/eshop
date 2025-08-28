@@ -9,10 +9,18 @@ import {
   UserIcon,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { navItems } from "../../configs/constants";
 import Link from "next/link";
 
-const HeaderBottom = () => {
+import { navItems } from "../../configs/constants";
+import HeaderUser from "./header-user";
+
+const HeaderBottom = ({
+  isLoading,
+  user,
+}: {
+  isLoading: boolean;
+  user: any;
+}) => {
   const [show, setShow] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
 
@@ -47,7 +55,7 @@ const HeaderBottom = () => {
           onClick={() => setShow(!show)}
           className={`w-[260px] ${
             isSticky && "-mb-2"
-          } cursor-pointer flex items-center justify-between px-5 h-[50px] bg-pryBg`}
+          } cursor-pointer flex items-center justify-between px-5 h-[50px] bg-pryColor`}
         >
           <div className={`flex items-center gap-2`}>
             <AlignLeft color="white" />
@@ -79,18 +87,7 @@ const HeaderBottom = () => {
           ))}
           {isSticky && (
             <div className="flex items-center gap-8">
-              <div className="flex items-center gap-2">
-                <Link
-                  href="/login"
-                  className="w-[50px] h-[50px] flex border-2 items-center justify-center rounded-full border-grayBg"
-                >
-                  <UserIcon color="black" />
-                </Link>
-                <Link href="/login">
-                  <span className="block font-medium">Hello</span>
-                  <span className="font-semibold">Sign in</span>
-                </Link>
-              </div>
+              <HeaderUser user={user?.user} isLoading={isLoading} />
               <div className="flex items-center gap-5">
                 <Link href="/wishlist" className="relative">
                   <HeartIcon color="black" />

@@ -1,11 +1,17 @@
 import express, { Router } from "express";
 import {
   createDiscountCodes,
+  createProduct,
   deleteDiscountCode,
+  deleteProduct,
+  deleteProductImage,
   getCategories,
   getDiscountCodeById,
   getDiscountCodes,
+  getSellerProducts,
+  restoreProduct,
   updateDiscountCode,
+  uploadProductImage,
 } from "../controllers/product.controller";
 import { isAuth, isSeller } from "@packages/middleware/isAuthenticated";
 
@@ -22,9 +28,29 @@ productroute.post(
   isSeller,
   createDiscountCodes
 );
-productroute.put("/update-discount-code", isAuth, isSeller, updateDiscountCode);
+productroute.put(
+  "/update-discount-code/:id",
+  isAuth,
+  isSeller,
+  updateDiscountCode
+);
 productroute.delete("/delete-discount-code/:id", isAuth, deleteDiscountCode);
+productroute.post(
+  "/upload-product-image",
+  isAuth,
+  isSeller,
+  uploadProductImage
+);
+productroute.delete(
+  "/delete-product-image",
+  isAuth,
+  isSeller,
+  deleteProductImage
+);
 
-// productroute.post("/create-product", isAuth, isSeller, createProduct);
+productroute.post("/create-product", isAuth, isSeller, createProduct);
+productroute.patch("/delete-product/:productId", isAuth, isSeller, deleteProduct);
+productroute.patch("/restore-product/:productId", isAuth, isSeller, restoreProduct);
+productroute.get("/get-seller-products", isAuth, isSeller, getSellerProducts);
 
 export default productroute;

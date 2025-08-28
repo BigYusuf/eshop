@@ -12,7 +12,7 @@ import {
   verifyForgotPasswordOtp,
   verifyOtp,
 } from "../utils/auth.helper";
-import { User, Seller, Shop } from "@./db";
+import { models } from "@./db";
 import { AuthError, ValidationError } from "../../../../packages/error-handler";
 import { setCookie } from "../utils/cookies/setCookie";
 
@@ -25,7 +25,7 @@ export const userRegister = async (
     validateRegisterData(req.body, "user");
     const { firstName, lastName, email } = req.body;
 
-    const existingUser = await User.findOne({ where: { email } });
+    const existingUser = await models.User.findOne({ where: { email } });
 
     if (existingUser) {
       return next(new ValidationError("User already exists with this email!"));
@@ -54,7 +54,7 @@ export const userVerify = async (
     if (!email || !otp || !lastName || !firstName || !password) {
       return next(new ValidationError("All fields are required!"));
     }
-    const existingUser = await User.findOne({ where: { email } });
+    const existingUser = await models.User.findOne({ where: { email } });
 
     if (existingUser) {
       return next(new ValidationError("User already exists with this email!"));
@@ -64,7 +64,7 @@ export const userVerify = async (
 
     const hashPassword = await bcrypt.hash(password, 10);
 
-    await User.create({
+    await models.User.create({
       lastName,
       firstName,
       email,
@@ -89,7 +89,7 @@ export const userLogin = async (
     if (!email || !password) {
       return next(new ValidationError("Email and Password are required!"));
     }
-    const existingUser = await User.findOne({ where: { email } });
+    const existingUser = await models.User.findOne({ where: { email } });
 
     if (!existingUser) {
       return next(new AuthError("Invalid Credential!"));
@@ -164,9 +164,9 @@ export const refreshTokenAuth = async (
     }
     let account;
     if (decoded?.role === "user") {
-      account = await User.findOne({ where: { id: decoded?.id } });
+      account = await models.User.findOne({ where: { id: decoded?.id } });
     } else if (decoded?.role === "seller") {
-      account = await Seller.findOne({ where: { id: decoded?.id } });
+      account = await models.Seller.findOne({ where: { id: decoded?.id } });
     }
     if (!account) {
       return next(new AuthError("Forbidden! User/Seller not found"));
@@ -230,7 +230,7 @@ export const userResetPassword = async (
     if (!email || !password) {
       return next(new ValidationError("Email and new Password are required!"));
     }
-    const existingUser = await User.findOne({ where: { email } });
+    const existingUser = await models.User.findOne({ where: { email } });
 
     if (!existingUser) {
       return next(new ValidationError(`User not found`));
@@ -249,7 +249,7 @@ export const userResetPassword = async (
 
     const hashPassword = await bcrypt.hash(password, 10);
 
-    await User.update(
+    await models.User.update(
       { password: hashPassword },
       { where: { email } } // or `id` or any other unique identifier
     );
@@ -272,7 +272,7 @@ export const sellerRegister = async (
     validateRegisterData(req.body, "seller");
     const { firstName, lastName, email } = req.body;
 
-    const existingSeller = await Seller.findOne({ where: { email } });
+    const existingSeller = await models.Seller.findOne({ where: { email } });
 
     if (existingSeller) {
       return next(
@@ -312,7 +312,7 @@ export const sellerVerify = async (
     ) {
       return next(new ValidationError("All fields are required!"));
     }
-    const existingSeller = await Seller.findOne({ where: { email } });
+    const existingSeller = await models.Seller.findOne({ where: { email } });
 
     if (existingSeller) {
       return next(
@@ -324,7 +324,7 @@ export const sellerVerify = async (
 
     const hashPassword = await bcrypt.hash(password, 10);
 
-    const seller = await Seller.create({
+    const seller = await models.Seller.create({
       lastName,
       firstName,
       email,
@@ -368,7 +368,7 @@ export const createShop = async (
     ) {
       return next(new ValidationError("All fields are required!"));
     }
-    const existingShop = await Shop.findOne({ where: { sellerId } });
+    const existingShop = await models.Shop.findOne({ where: { sellerId } });
 
     if (existingShop) {
       return next(new ValidationError("This Seller already has a Shop!"));
@@ -385,7 +385,7 @@ export const createShop = async (
       shopData.website = website;
     }
 
-    const shop = await Shop.create(shopData);
+    const shop = await models.Shop.create(shopData);
 
     res.status(201).json({
       success: true,
@@ -408,7 +408,7 @@ export const connectBank = async (
     if (!sellerId) {
       return next(new ValidationError("Seller ID is required"));
     }
-    const existingShop = await Shop.findOne({ where: { id: sellerId } });
+    const existingShop = await models.Shop.findOne({ where: { id: sellerId } });
 
     if (existingShop) {
       return next(new ValidationError("Seller is not available with this id!"));
@@ -428,7 +428,7 @@ export const sellerLogin = async (
     if (!email || !password) {
       return next(new ValidationError("Email and Password are required!"));
     }
-    const existingSeller = await Seller.findOne({ where: { email } });
+    const existingSeller = await models.Seller.findOne({ where: { email } });
 
     if (!existingSeller) {
       return next(new AuthError("Invalid Credential!"));

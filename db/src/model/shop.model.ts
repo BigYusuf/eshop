@@ -17,7 +17,6 @@ export class Shop extends Model<
   declare description?: string;
   declare address?: string;
   declare openingHours?: string;
-  declare closingHours?: string;
   declare website?: string;
   declare socialLinks?: string;
   declare ratings?: number;
@@ -25,8 +24,6 @@ export class Shop extends Model<
 
   declare imageId?: ForeignKey<string>; // shop avatar/logo
   declare bannerImageId?: ForeignKey<string>; // optional banner
-
-  declare sellerId: ForeignKey<string>; // shop belongs to a seller
 
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
@@ -55,10 +52,7 @@ export class Shop extends Model<
           type: DataTypes.STRING,
           allowNull: true,
         },
-        closingHours: {
-          type: DataTypes.STRING,
-          allowNull: true,
-        },
+     
         address: {
           type: DataTypes.STRING,
           allowNull: true,
@@ -75,11 +69,7 @@ export class Shop extends Model<
           type: DataTypes.UUID,
           allowNull: true,
         },
-        sellerId: {
-          type: DataTypes.UUID,
-          unique: true,
-          allowNull: false,
-        },
+   
         createdAt: {
           type: DataTypes.DATE,
           defaultValue: DataTypes.NOW,
@@ -95,5 +85,13 @@ export class Shop extends Model<
         timestamps: true,
       }
     );
+  }
+   static associate(models: any) {
+    Shop.belongsTo(models.Seller, { as: "seller" });
+    Shop.belongsTo(models.Image, { as: "logo", foreignKey: "imageId" });
+    Shop.belongsTo(models.Image, { as: "banner", foreignKey: "bannerImageId" });
+    
+    Shop.hasMany(models.ShopReview, { as: "shop_reviews" });
+    Shop.hasMany(models.ShopSocialLink, { as: "socialLinks" });
   }
 }

@@ -11,7 +11,7 @@ export class User extends Model<
   InferAttributes<User>,
   InferCreationAttributes<User>
 > {
- declare id: CreationOptional<string>;
+  declare id: CreationOptional<string>;
   declare firstName?: string;
   declare lastName?: string;
   declare email: string;
@@ -53,5 +53,9 @@ export class User extends Model<
         timestamps: true,
       }
     );
+  }
+  static associate(models: any) {
+    User.hasOne(models.Image, { as: "avatar" });
+    User.hasMany(models.ShopReview, { as: "shop_reviews" });
   }
 }

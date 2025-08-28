@@ -5,7 +5,7 @@ import morgan from "morgan";
 import proxy from "express-http-proxy";
 import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
-
+import {initDb} from '@./db' 
 const app = express();
 app.use(
   cors({
@@ -19,6 +19,9 @@ app.use(cookieParser());
 app.use(express.json({ limit: "100mb" }));
 app.use(express.urlencoded({ limit: "100mb", extended: true }));
 app.set("trust proxy", 1);
+
+// initialize db
+initDb()
 
 //Apply rate limiting
 const limiter = rateLimit({

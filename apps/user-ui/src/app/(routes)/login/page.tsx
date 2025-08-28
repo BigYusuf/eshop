@@ -50,7 +50,7 @@ const LoginPage = () => {
   });
 
   return (
-    <div className="w-full min-h-[85vh] py-10 bg-[#f1f1f1]">
+    <div className="w-full min-h-[85vh] py-10 bg-pryBg">
       <h1 className="text-4xl font-Poppins font-semibold text-black text-center">
         Login
       </h1>
@@ -64,7 +64,7 @@ const LoginPage = () => {
           </h3>
           <p className="text-center text-gray-500 mb-4">
             Don't have account{" "}
-            <Link href={"/signup"} className={"text-pryBg"}>
+            <Link href={"/signup"} className={"text-pryColor"}>
               Sign Up
             </Link>
           </p>
@@ -75,13 +75,13 @@ const LoginPage = () => {
             <div className="flex-1 border-t border-gray-300" />
           </div>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <label htmlFor="" className="text-gray-700 block mb-1">
+            <label htmlFor="" className="label-text">
               Email
             </label>
             <input
               type="email"
               placeholder="Enter valid email"
-              className="w-full p-2 border border-gray-300 outline-0 rounded mb-1"
+              className="inputt"
               {...register("email", {
                 required: "Email is required",
                 pattern: {
@@ -91,12 +91,12 @@ const LoginPage = () => {
               })}
             />
             {errors?.email && (
-              <p className="text-red-500 text-sm">
+              <p className="error-text">
                 {String(errors?.email?.message)}
               </p>
             )}
 
-            <label htmlFor="" className="text-gray-700 block mb-1">
+            <label htmlFor="" className="label-text">
               Password
             </label>
             <div className="relative">
@@ -121,7 +121,7 @@ const LoginPage = () => {
               </button>
             </div>
             {errors?.password && (
-              <p className="text-red-500 text-sm">
+              <p className="error-text">
                 {String(errors?.password?.message)}
               </p>
             )}

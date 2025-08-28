@@ -13,5 +13,9 @@
     "src/**/*.ts"
   ],
   "exclude": [],
-  "references": []
+  "references": [
+    {
+      "path": "../../db/tsconfig.lib.json"
+    }
+  ]
 }

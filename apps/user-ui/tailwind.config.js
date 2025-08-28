@@ -24,7 +24,7 @@ module.exports = {
         Poppins: ["var(--font-poppins)"],
       },
       colors: {
-        pryBg: "var(--pry-bg-color)",
+        pryColor: "var(--pry-bg-color)",
         greyBg: "var(--grey-bg-color)",
         pryTxt: "var(--pry-txt-color)",
       },

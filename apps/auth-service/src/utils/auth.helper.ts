@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import { ValidationError } from "../../../../packages/error-handler";
 import { NextFunction, Request, Response } from "express";
-import { redis, Seller, User } from "@./db";
+import { redis, models } from "@./db";
 import { sendEmail } from "./sendMail";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -113,8 +113,8 @@ export const handleForgotPass = async (
     }
     const existingUser =
       uType === "user"
-        ? await User.findOne({ where: { email } })
-        : await Seller.findOne({ where: { email } });
+        ? await models.User.findOne({ where: { email } })
+        : await models.Seller.findOne({ where: { email } });
 
     if (!existingUser) {
       throw new ValidationError(`${uType} not found`);

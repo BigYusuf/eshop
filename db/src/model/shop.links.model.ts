@@ -1,4 +1,3 @@
-
 import {
   DataTypes,
   Model,
@@ -45,5 +44,8 @@ export class ShopSocialLink extends Model<
         timestamps: true,
       }
     );
+  }
+  static associate(models: any) {
+    ShopSocialLink.belongsTo(models.Shop, { as: "shop" });
   }
 }

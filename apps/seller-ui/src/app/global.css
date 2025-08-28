@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* html {
+  -webkit-text-size-adjust: 100%;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif,
+    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+  line-height: 1.5;
+  tab-size: 4;
+  scroll-behavior: smooth;
+}
+body {
+  font-family: inherit;
+  line-height: inherit;
+  margin: 0;
+} */
+
+:root {
+  --pry-cl-color: #3489ff;
+  --pry-bg-color: #f1f1f1;
+  --grey-bg-color: #010f1c1a;
+  --pry-txt-color: #1a1a1a;
+  --aux-bg-color: #f4f4f4; /* Light gray, change to your preference */
+}
+
+/* You can also do dark mode overrides */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --pry-cl-color: #3489ff;
+    --pry-bg-color: #f1f1f1;
+    --grey-bg-color: #010f1c1a;
+    --pry-txt-color: #f4f4f4;
+    --aux-bg-color: #1a1a1a;
+  }
+}
+/* Reusable class for label text */
+.container-1 {
+  @apply p-6 shadow-lg rounded-lg;
+}
+.dash-title {
+  @apply text-2xl font-semibold font-Poppins text-white;
+}
+.label-text {
+  @apply text-gray-700 block mb-1;
+}
+.label-text-1 {
+  @apply text-gray-300 font-semibold block mb-1;
+}
+.error-text {
+  @apply text-red-500 text-sm;
+}
+.inputt {
+  @apply w-full p-2 border border-gray-300 outline-0 rounded mb-1;
+}
+.input-2 {
+  @apply w-full border outline-none bg-transparent rounded-md text-white transition-colors;
+}

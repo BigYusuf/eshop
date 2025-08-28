@@ -4,51 +4,32 @@ import { User } from "./model/user.model.js";
 import { Image } from "./model/image.model.js";
 import { Seller } from "./model/seller.model.js";
 import { Shop } from "./model/shop.model.js";
-import { ShopSocialLink } from "./model/shopLinks.model.js";
+import { ShopSocialLink } from "./model/shop.links.model.js";
 import { ShopReview } from "./model/shopReview.model.js";
+import { Category, SubCategory } from "./model/product.category.model.js";
+import { DiscountCode } from "./model/discount.code.model.js";
+import { Product } from "./model/product.model.js";
+import { initDb } from "./iniDb.js";
+import { ProductEvent } from "./model/product.event.model.js";
+import { ProductReview } from "./model/product.review.model.js";
+const models = {
+  User,
+  Image,
+  Seller,
+  Shop,
+  ShopSocialLink,
+  ShopReview,
+  Category,
+  SubCategory,
+  DiscountCode,
+  Product,
+  ProductEvent,
+  ProductReview,
+};
 
-User.initModel(sequelize);
-Image.initModel(sequelize);
-Seller.initModel(sequelize);
-Shop.initModel(sequelize);
-ShopReview.initModel(sequelize);
-ShopSocialLink.initModel(sequelize);
+// init models
+Object.values(models).forEach((m) => m.initModel(sequelize));
+// setup associations
+Object.values(models).forEach((m) => m.associate?.(models));
 
-// User - Profile Images
-User.hasMany(Image, { foreignKey: "userId", as: "avatar" });
-Image.belongsTo(User, { foreignKey: "userId" });
-
-// Seller - Profile Images
-Seller.hasMany(Image, { foreignKey: "sellerId", as: "avatar" });
-Image.belongsTo(Seller, { foreignKey: "sellerId" });
-
-// User → Image
-// User.belongsTo(Image, { foreignKey: "imageId", as: "avatar" });
-// Image.hasMany(User, { foreignKey: "imageId", as: "users" }); // hasOne if you want unique per image
-
-// Shop → Logo Image (1:1)
-Shop.belongsTo(Image, { foreignKey: "imageId", as: "logo" });
-// 
-// Shop → Banner Image (1:1)
-Shop.belongsTo(Image, { foreignKey: "bannerImageId", as: "banner" });
-
-// Seller → Image
-// Seller.belongsTo(Image, { foreignKey: "imageId", as: "images" });
-// Image.hasMany(Seller, { foreignKey: "imageId", as: "sellers" });
-
-// Seller → Shop
-Seller.hasOne(Shop, { foreignKey: "sellerId", as: "shop" });
-Shop.belongsTo(Seller, { foreignKey: "sellerId", as: "seller" });
-
-Shop.hasMany(ShopSocialLink, { foreignKey: "shopId", as: "socialLinks" });
-ShopSocialLink.belongsTo(Shop, { foreignKey: "shopId" });
-
-// User → ShopReviews
-User.hasMany(ShopReview, { foreignKey: "userId", as: "shop_reviews" });
-ShopReview.belongsTo(User, { foreignKey: "userId", as: "user" });
-
-// Shop → ShopReviews
-Shop.hasMany(ShopReview, { foreignKey: "shopId", as: "shop_reviews" });
-ShopReview.belongsTo(Shop, { foreignKey: "shopId", as: "shop" });
-
-export { sequelize, redis, User, Seller, Image, ShopReview, Shop, ShopSocialLink };
+export { sequelize, redis, models, initDb };

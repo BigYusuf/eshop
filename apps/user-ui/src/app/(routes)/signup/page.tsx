@@ -110,7 +110,7 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="w-full min-h-[85vh] py-10 bg-[#f1f1f1]">
+    <div className="w-full min-h-[85vh] py-10 bg-pryBg">
       <h1 className="text-4xl font-Poppins font-semibold text-black text-center">
         Register
       </h1>
@@ -124,7 +124,7 @@ const RegisterPage = () => {
           </h3>
           <p className="text-center text-gray-500 mb-4">
             Already have an account{" "}
-            <Link href={"/login"} className={"text-pryBg"}>
+            <Link href={"/login"} className={"text-pryColor"}>
               Login
             </Link>
           </p>
@@ -136,13 +136,13 @@ const RegisterPage = () => {
           </div>
           {!showOtp ? (
             <form onSubmit={handleSubmit(onSubmit)}>
-              <label htmlFor="" className="text-gray-700 block mb-1">
+              <label htmlFor="" className="label-text">
                 First Name
               </label>
               <input
                 type="text"
                 placeholder="Enter valid First name"
-                className="w-full p-2 border border-gray-300 outline-0 rounded mb-1"
+                className="inputt"
                 {...register("firstName", {
                   required: "First Name is required",
                   minLength: {
@@ -152,17 +152,17 @@ const RegisterPage = () => {
                 })}
               />
               {errors?.firstName && (
-                <p className="text-red-500 text-sm">
+                <p className="error-text">
                   {String(errors?.firstName?.message)}
                 </p>
               )}
-              <label htmlFor="" className="text-gray-700 block mb-1">
+              <label htmlFor="" className="label-text">
                 Last Name
               </label>
               <input
                 type="text"
                 placeholder="Enter valid Last name"
-                className="w-full p-2 border border-gray-300 outline-0 rounded mb-1"
+                className="inputt"
                 {...register("lastName", {
                   required: "Last Name is required",
                   minLength: {
@@ -172,18 +172,18 @@ const RegisterPage = () => {
                 })}
               />
               {errors?.lastName && (
-                <p className="text-red-500 text-sm">
+                <p className="error-text">
                   {String(errors?.lastName?.message)}
                 </p>
               )}
 
-              <label htmlFor="" className="text-gray-700 block mb-1">
+              <label htmlFor="" className="label-text">
                 Email
               </label>
               <input
                 type="email"
                 placeholder="Enter valid email"
-                className="w-full p-2 border border-gray-300 outline-0 rounded mb-1"
+                className="inputt"
                 {...register("email", {
                   required: "Email is required",
                   pattern: {
@@ -193,12 +193,12 @@ const RegisterPage = () => {
                 })}
               />
               {errors?.email && (
-                <p className="text-red-500 text-sm">
+                <p className="error-text">
                   {String(errors?.email?.message)}
                 </p>
               )}
 
-              <label htmlFor="" className="text-gray-700 block mb-1">
+              <label htmlFor="" className="label-text">
                 Password
               </label>
               <div className="relative">
@@ -223,7 +223,7 @@ const RegisterPage = () => {
                 </button>
               </div>
               {errors?.password && (
-                <p className="text-red-500 text-sm">
+                <p className="error-text">
                   {String(errors?.password?.message)}
                 </p>
               )}
@@ -231,7 +231,7 @@ const RegisterPage = () => {
               <button
                 type="submit"
                 disabled={singupMutation.isPending}
-                className={`w-full py-2 !rounded cursor-pointer text-white hover:bg-pryBg ${
+                className={`w-full py-2 !rounded cursor-pointer text-white hover:bg-pryColor ${
                   singupMutation.isPending ? "bg-gray-300" : "bg-black"
                 }`}
               >
@@ -279,7 +279,7 @@ const RegisterPage = () => {
               <p className="mt-4 text-center text-sm">
                 {canResend ? (
                   <button
-                    className="text-pryBg cursor-pointer"
+                    className="text-pryColor cursor-pointer"
                     onClick={resendOtp}
                   >
                     Resend OTP

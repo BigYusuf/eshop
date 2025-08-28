@@ -1,7 +1,7 @@
-import Header from "../shared/widgets/header";
 import { Poppins, Roboto } from "next/font/google";
 
 import "./global.css";
+import Header from "../shared/widgets/header";
 import Providers from "./providers";
 
 export const metadata = {

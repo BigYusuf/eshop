@@ -66,4 +66,7 @@ export class ShopReview extends Model<
       }
     );
   }
+  static associate(models: any) {
+    ShopReview.belongsTo(models.Shop, { as: "shop" });
+  }
 }
