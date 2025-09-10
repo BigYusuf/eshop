@@ -19,6 +19,8 @@ export class Image extends Model<
   // Type-only declarations (not in init!)
   declare sellerId?: ForeignKey<string>;
   declare userId?: ForeignKey<string>;
+  declare productId?: ForeignKey<string>;
+  declare shopId?: ForeignKey<string>; // optional direct link if needed
 
   static initModel(sequelize: Sequelize) {
     Image.init(
@@ -55,7 +57,12 @@ export class Image extends Model<
       foreignKey: { allowNull: true },
       onDelete: "CASCADE",
     });
-
+    // Product images (1 Product → many Images)
+    Image.belongsTo(models.Product, {
+      foreignKey: "productId",
+      as: "product",
+      onDelete: "CASCADE",
+    });
     Image.hasOne(models.Shop, { as: "shopLogo", foreignKey: "imageId" });
     Image.hasOne(models.Shop, {
       as: "shopBanner",

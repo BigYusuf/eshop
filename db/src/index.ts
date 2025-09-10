@@ -9,22 +9,25 @@ import { ShopReview } from "./model/shopReview.model.js";
 import { Category, SubCategory } from "./model/product.category.model.js";
 import { DiscountCode } from "./model/discount.code.model.js";
 import { Product } from "./model/product.model.js";
+import { Event } from "./model/event.model.js";
 import { initDb } from "./iniDb.js";
 import { ProductEvent } from "./model/product.event.model.js";
 import { ProductReview } from "./model/product.review.model.js";
+
 const models = {
   User,
-  Image,
   Seller,
   Shop,
-  ShopSocialLink,
-  ShopReview,
   Category,
   SubCategory,
-  DiscountCode,
   Product,
+  Image,
+  ShopSocialLink,
+  ShopReview,
+  DiscountCode,
   ProductEvent,
   ProductReview,
+  Event,
 };
 
 // init models

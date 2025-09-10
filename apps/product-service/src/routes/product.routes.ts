@@ -5,10 +5,11 @@ import {
   deleteDiscountCode,
   deleteProduct,
   deleteProductImage,
+  getAllProducts,
   getCategories,
   getDiscountCodeById,
   getDiscountCodes,
-  getSellerProducts,
+  getShopProducts,
   restoreProduct,
   updateDiscountCode,
   uploadProductImage,
@@ -49,8 +50,19 @@ productroute.delete(
 );
 
 productroute.post("/create-product", isAuth, isSeller, createProduct);
-productroute.patch("/delete-product/:productId", isAuth, isSeller, deleteProduct);
-productroute.patch("/restore-product/:productId", isAuth, isSeller, restoreProduct);
-productroute.get("/get-seller-products", isAuth, isSeller, getSellerProducts);
+productroute.patch(
+  "/delete-product/:productId",
+  isAuth,
+  isSeller,
+  deleteProduct
+);
+productroute.patch(
+  "/restore-product/:productId",
+  isAuth,
+  isSeller,
+  restoreProduct
+);
+productroute.get("/get-shop-products", isAuth, isSeller, getShopProducts);
+productroute.get("/get-all-products", getAllProducts);
 
 export default productroute;

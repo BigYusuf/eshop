@@ -9,6 +9,11 @@ import {
 import { imagekit } from "@packages/libs/imagkit";
 // import { AuthError, ValidationError } from "../../../../packages/error-handler";
 
+// Extend Request type to include seller
+interface AuthenticatedRequest extends Request {
+  seller?: { id: string; shop: { id?: string } };
+}
+
 //get product
 export const getCategories = async (
   req: Request,
@@ -39,37 +44,52 @@ export const getCategories = async (
 };
 
 export const createDiscountCodes = async (
-  req: any,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { publicName, discountValue, discountCode, discountType } = req.body;
+    const { publicName, discountValue, discountCode, discountType, shopId } =
+      req.body;
 
+    if (!discountCode || !discountValue || !discountType) {
+      return next(new ValidationError("Missing required fields"));
+    }
+
+    // normalize discountCode
+    const code = discountCode.trim().toUpperCase();
+
+    // check existing
     const existingDiscountCode = await models.DiscountCode.findOne({
-      where: { discountCode },
+      where: { discountCode: code },
     });
 
     if (existingDiscountCode) {
       return next(
         new ValidationError(
-          "Discount code already available please use a different code!"
+          "Discount code already exists. Please use a different one."
         )
       );
     }
 
+    // ensure value is number
+    const parsedValue = parseFloat(discountValue);
+    if (isNaN(parsedValue)) {
+      return next(new ValidationError("Discount value must be a number"));
+    }
+
     const data = await models.DiscountCode.create({
       publicName,
-      discountCode,
+      discountCode: code,
       discountType,
-      discountValue: parseFloat(discountValue),
-      sellerId: req.seller.id,
+      discountValue: parsedValue,
+      shopId: shopId || req.seller?.shop?.id, // fallback if discounts tied to shops
     });
 
     res.status(201).json({
       success: true,
       discountCode: data,
-      message: "DiscountCode created successfully!",
+      message: "Discount code created successfully!",
     });
   } catch (error) {
     return next(error);
@@ -84,12 +104,22 @@ export const getDiscountCodes = async (
 ) => {
   try {
     const discountCodes = await models.DiscountCode.findAll({
-      where: [{ sellerId: req.seller.id }],
+      where: { shopId: req.seller?.shop?.id },
+      include: [
+        { model: models.Shop, as: "shop", attributes: ["id", "name"] },
+        {
+          model: models.Event,
+          as: "events",
+          attributes: ["id", "name", "startingDate", "endingDate"],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
     });
 
     return res.status(200).json({
       success: true,
       discountCodes,
+      message: " Discount codes retrieved successfully",
     });
   } catch (error) {
     return next(error);
@@ -104,7 +134,7 @@ export const deleteDiscountCode = async (
 ) => {
   try {
     const { id } = req.params;
-    const sellerId = req.seller?.id;
+    const shopId = req.seller?.shop?.id;
 
     const discountCode = await models.DiscountCode.findOne({
       where: { id },
@@ -114,7 +144,7 @@ export const deleteDiscountCode = async (
       return next(new NotFoundError("Discount code not found!"));
     }
 
-    if (discountCode.sellerId !== sellerId) {
+    if (discountCode.shopId !== shopId) {
       return next(new ValidationError("Unauthorized access!"));
     }
     await models.DiscountCode.destroy({
@@ -132,7 +162,7 @@ export const deleteDiscountCode = async (
 
 // get single discount code
 export const getDiscountCodeById = async (
-  req: any,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) => {
@@ -140,7 +170,7 @@ export const getDiscountCodeById = async (
     const { id } = req.params;
 
     const discountCode = await models.DiscountCode.findOne({
-      where: { id, sellerId: req.seller.id },
+      where: { id, shopId: req.seller?.shop?.id },
     });
 
     if (!discountCode) {
@@ -158,7 +188,7 @@ export const getDiscountCodeById = async (
 
 // update discountcode
 export const updateDiscountCode = async (
-  req: any,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) => {
@@ -167,7 +197,15 @@ export const updateDiscountCode = async (
     const { publicName, discountValue, discountCode, discountType } = req.body;
 
     const existing = await models.DiscountCode.findOne({
-      where: { id, sellerId: req.seller.id },
+      where: { id, shopId: req.seller?.shop?.id },
+      attributes: [
+        "id",
+        "publicName",
+        "discountValue",
+        "discountCode",
+        "discountType",
+        "shopId",
+      ],
     });
 
     if (!existing) {
@@ -196,7 +234,7 @@ export const updateDiscountCode = async (
 
 //apply /use discount code
 export const applyDiscountCode = async (
-  req: any,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) => {
@@ -204,7 +242,7 @@ export const applyDiscountCode = async (
     const { code, amount } = req.body; // `amount` = cart total
 
     const discount = await models.DiscountCode.findOne({
-      where: { discountCode: code, sellerId: req.seller.id },
+      where: { discountCode: code, shopId: req?.seller?.shop?.id },
     });
 
     if (!discount) {
@@ -303,6 +341,7 @@ export const createProduct = async (
       stock,
       salePrice,
       regularPrice,
+      isFeatured,
       customProperties = {},
       images = [], // expect [{ fileId, url }]
     } = req.body;
@@ -355,8 +394,9 @@ export const createProduct = async (
       regularPrice: parseFloat(regularPrice),
       customProperties: customProperties || {},
       customSpecification: customSpecification || {},
-      sellerId: req.seller.id,
+      shopId: req?.seller?.shop?.id,
       categoryId,
+      isFeatured: isFeatured || false,
       subCategoryId,
     });
 
@@ -413,23 +453,23 @@ export const updateProduct = async (
 
 // delete product
 export const deleteProduct = async (
-  req: any,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) => {
   try {
     const { productId } = req.params;
-    const sellerId = req?.seller?.id;
+    const shopId = req?.seller?.shop?.id;
 
     const product = await models.Product.findOne({
       where: { id: productId },
-      attributes: ["id", "sellerId", "deletedAt"],
+      attributes: ["id", "shopId", "deletedAt"],
       // paranoid: false, // 👈 include soft-deleted rows
     });
     if (!product) {
       return next(new ValidationError("Product not found"));
     }
-    if (sellerId !== product?.sellerId) {
+    if (shopId !== product?.shopId) {
       return next(new ValidationError("Unauthorized action"));
     }
     if (product.isDeleted) {
@@ -455,6 +495,7 @@ export const deleteProduct = async (
     return next(error);
   }
 };
+
 // restore product
 export const restoreProduct = async (
   req: any,
@@ -463,7 +504,7 @@ export const restoreProduct = async (
 ) => {
   try {
     const { productId } = req.params;
-    const sellerId = req?.seller?.id;
+    const shopId = req?.seller?.shop?.id;
 
     const product = await models.Product.findOne({
       where: { id: productId },
@@ -473,7 +514,7 @@ export const restoreProduct = async (
     if (!product) {
       return next(new ValidationError("Product not found"));
     }
-    if (sellerId !== product?.sellerId) {
+    if (shopId !== product?.shopId) {
       return next(new ValidationError("Unauthorized action"));
     }
     if (product.isDeleted) {
@@ -508,37 +549,139 @@ export const getProduct = async (
   next: NextFunction
 ) => {
   try {
-  } catch (error) {
-    next(error);
-  }
-};
+    const { productId } = req.params;
 
-export const getSellerProducts = async (
-  req: any,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const products = await models.Product.findAll({
-      where: [{ sellerId: req.seller.id }],
+    const product = await models.Product.findOne({
+      where: { id: productId, isDeleted: false },
       include: [
         { model: models.Image, as: "images" },
         { model: models.Category, as: "category" },
         { model: models.SubCategory, as: "subCategory" },
       ],
     });
+
+    if (!product) {
+      return next(new NotFoundError("Product not found"));
+    }
+
+    // // increment views
+    // product.views += 1;
+    await product.save();
+
     res.status(200).json({
       success: true,
-      products,
-      message: "Seller Products retrieved successfully",
+      product,
     });
   } catch (error) {
     next(error);
   }
 };
 
-export const getProducts = async (
+export const getShopProducts = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.seller?.shop?.id) {
+      return next(new ValidationError("No shop associated with this seller"));
+    }
+    const products = await models.Product.findAll({
+      where: { shopId: req?.seller?.shop?.id },
+      include: [
+        { model: models.Image, as: "images" },
+        { model: models.Category, as: "category" },
+        { model: models.SubCategory, as: "subCategory" },
+      ],
+    });
+    console.log("prod", products);
+    res.status(200).json({
+      success: true,
+      products,
+      message: "Shop Products retrieved successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAllProducts = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {};
+) => {
+  try {
+    const page = Number.isNaN(Number(req.query.page))
+      ? 1
+      : parseInt(req.query.page as string);
+    const limit = Number.isNaN(Number(req.query.limit))
+      ? 20
+      : parseInt(req.query.limit as string);
+    const offset = (page - 1) * limit;
+    const type = req.query.type as string;
+
+    const categoryId = req.query.categoryId as string;
+    const subCategoryId = req.query.subCategoryId as string;
+
+    // shared includes
+    const include = [
+      {
+        model: models.Shop,
+        as: "shop",
+        attributes: ["id", "name", "description"], // pick only what you need
+      },
+      { model: models.Event, as: "events" },
+      { model: models.Image, as: "images" },
+      { model: models.Category, as: "category" },
+      { model: models.SubCategory, as: "subCategory" },
+    ];
+
+    // dynamic ordering
+    let order: any = [["totalSales", "DESC"]];
+    if (type === "new") order = [["createdAt", "DESC"]];
+    if (type === "featured")
+      order = [
+        ["isFeatured", "DESC"],
+        ["createdAt", "DESC"],
+      ];
+    if (type === "popular") order = [["views", "DESC"]];
+
+    // build where clause dynamically
+    const where: any = { isDeleted: false };
+    if (categoryId) where.categoryId = categoryId;
+    if (subCategoryId) where.subCategoryId = subCategoryId;
+
+    // main paginated query
+    const { count, rows: products } = await models.Product.findAndCountAll({
+      where,
+      include,
+      limit,
+      offset,
+      order,
+    });
+
+    // top10 query (ignores pagination but still respects filters)
+    const top10Products = await models.Product.findAll({
+      where,
+      include,
+      limit: 10,
+      order,
+    });
+    console.log("latest prod: ", products);
+    res.status(200).json({
+      success: true,
+      products,
+      top10Products,
+      pagination: {
+        top10By: type || "topSales",
+        skip: offset,
+        total: count,
+        page,
+        limit,
+        totalPages: Math.ceil(count / limit),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};

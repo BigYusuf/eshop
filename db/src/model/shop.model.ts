@@ -18,12 +18,12 @@ export class Shop extends Model<
   declare address?: string;
   declare openingHours?: string;
   declare website?: string;
-  declare socialLinks?: string;
   declare ratings?: number;
-  declare category?: number;
+  declare category?: string; // or ENUM
 
-  declare imageId?: ForeignKey<string>; // shop avatar/logo
-  declare bannerImageId?: ForeignKey<string>; // optional banner
+  declare sellerId: ForeignKey<string>;
+  declare imageId?: ForeignKey<string>; 
+  declare bannerImageId?: ForeignKey<string>; 
 
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
@@ -48,28 +48,18 @@ export class Shop extends Model<
           type: DataTypes.STRING,
           allowNull: true,
         },
-        openingHours: {
-          type: DataTypes.STRING,
-          allowNull: true,
-        },
-     
-        address: {
-          type: DataTypes.STRING,
-          allowNull: true,
-        },
+        openingHours: DataTypes.STRING,
+        address: DataTypes.STRING,
         ratings: {
           type: DataTypes.FLOAT,
           defaultValue: 0,
         },
-        imageId: {
+        sellerId: {
           type: DataTypes.UUID,
-          allowNull: true,
+          allowNull: false,
         },
-        bannerImageId: {
-          type: DataTypes.UUID,
-          allowNull: true,
-        },
-   
+        imageId: DataTypes.UUID,
+        bannerImageId: DataTypes.UUID,
         createdAt: {
           type: DataTypes.DATE,
           defaultValue: DataTypes.NOW,
@@ -86,12 +76,38 @@ export class Shop extends Model<
       }
     );
   }
-   static associate(models: any) {
-    Shop.belongsTo(models.Seller, { as: "seller" });
+
+  static associate(models: any) {
+    Shop.belongsTo(models.Seller, {
+      foreignKey: "sellerId",
+      as: "seller",
+      onDelete: "CASCADE",
+    });
+
+    Shop.hasMany(models.Product, {
+      foreignKey: "shopId",
+      as: "products",
+      onDelete: "CASCADE",
+    });
+
+    Shop.hasMany(models.Event, { foreignKey: "shopId", as: "events" });
+
+    Shop.hasMany(models.DiscountCode, {
+      foreignKey: "shopId",
+      as: "discountCodes",
+    });
+
     Shop.belongsTo(models.Image, { as: "logo", foreignKey: "imageId" });
     Shop.belongsTo(models.Image, { as: "banner", foreignKey: "bannerImageId" });
-    
-    Shop.hasMany(models.ShopReview, { as: "shop_reviews" });
-    Shop.hasMany(models.ShopSocialLink, { as: "socialLinks" });
+
+    Shop.hasMany(models.ShopReview, {
+      foreignKey: "shopId",
+      as: "shop_reviews",
+    });
+
+    Shop.hasMany(models.ShopSocialLink, {
+      foreignKey: "shopId",
+      as: "socialLinks",
+    });
   }
 }

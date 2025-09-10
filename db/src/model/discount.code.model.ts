@@ -18,7 +18,7 @@ export class DiscountCode extends Model<
   declare discountCode: string;
   declare discountValue: number;
 
-  declare sellerId: ForeignKey<string>;
+  declare shopId: ForeignKey<string>;
 
   // timeline (can match productEvent timeline or be independent)
   declare startDate?: Date;
@@ -67,11 +67,11 @@ export class DiscountCode extends Model<
   }
 
   static associate(models: any) {
-    // Seller owns discount codes
-    DiscountCode.belongsTo(models.Seller, { as: "seller" });
+    // Shop owns discount codes
+    DiscountCode.belongsTo(models.Shop, { as: "shop", foreignKey: "shopId" });
 
     // Event <-> DiscountCode (many-to-many)
-    DiscountCode.belongsToMany(models.ProductEvent, {
+    DiscountCode.belongsToMany(models.Event, {
       through: "event_discounts",
       foreignKey: "discountId",
       otherKey: "eventId",
@@ -81,7 +81,7 @@ export class DiscountCode extends Model<
     // Discounts also apply to products directly (if needed)
     DiscountCode.belongsToMany(models.Product, {
       through: "product_discounts",
-      foreignKey: "discountId",
+      foreignKey: "discountCodeId",
       otherKey: "productId",
       as: "products",
     });

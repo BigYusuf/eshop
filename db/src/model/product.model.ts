@@ -32,16 +32,18 @@ export class Product extends Model<
   declare stock: number;
   declare salePrice: number;
   declare regularPrice: number;
+  declare totalSales?: number;
 
   declare customSpecification?: Record<string, any>[]; // or Array<{ name: string; value: string }>
   declare customProperties?: Record<string, any>;
 
   declare averageRating?: number;
   declare reviewCount?: number;
-  declare deletedAt?: Date|null;
+  declare deletedAt?: Date | null;
+  declare isFeatured?: boolean;
 
   // Foreign Keys
-  declare sellerId: ForeignKey<string>;
+  declare shopId: ForeignKey<string>;
   declare categoryId: ForeignKey<string>;
   declare subCategoryId: ForeignKey<string>;
 
@@ -104,8 +106,35 @@ export class Product extends Model<
         customProperties: {
           type: DataTypes.JSONB,
         },
-        isDeleted: {
+        totalSales: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          defaultValue: 0,
+        },
+        isFeatured: {
           type: DataTypes.BOOLEAN,
+          defaultValue: false,
+        },
+        shopId: {
+          type: DataTypes.UUID,
+          allowNull: false,
+          references: {
+            model: "shops",
+            key: "id",
+          },
+        },
+        averageRating: {
+          type: DataTypes.FLOAT,
+          defaultValue: 0,
+        },
+        reviewCount: {
+          type: DataTypes.INTEGER,
+          defaultValue: 0,
+        },
+        isDeleted: {
+          allowNull: false,
+          type: DataTypes.BOOLEAN,
+          defaultValue: false,
         },
         status: {
           type: DataTypes.STRING,
@@ -126,9 +155,9 @@ export class Product extends Model<
   // 🔑 associate
   static associate(models: any) {
     // belongs to seller
-    Product.belongsTo(models.Seller, {
-      foreignKey: "sellerId",
-      as: "seller",
+    Product.belongsTo(models.Shop, {
+      foreignKey: "shopId",
+      as: "shop",
       onDelete: "CASCADE",
     });
 
@@ -157,15 +186,22 @@ export class Product extends Model<
     Product.hasMany(models.ProductReview, {
       foreignKey: "productId",
       as: "product_reviews",
-      onDelete: "CASCADE",
+      // onDelete: "CASCADE",
     });
 
     // many-to-many with DiscountCode
     Product.belongsToMany(models.DiscountCode, {
-      through: "ProductDiscountCodes",
+      through: "product_discounts",
       as: "discountCodes",
       foreignKey: "productId",
       otherKey: "discountCodeId",
+    });
+
+    //  many-to-many with Event via ProductEvent
+    Product.belongsToMany(models.Event, {
+      through: models.ProductEvent,
+      foreignKey: "productId",
+      as: "events",
     });
   }
 }

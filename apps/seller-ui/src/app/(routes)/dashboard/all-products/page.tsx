@@ -28,7 +28,7 @@ import toast from "react-hot-toast";
 
 const fetchProducts = async () => {
   const res = await axiosInstance.get(
-    "/product/api/product/get-seller-products"
+    "/product/api/product/get-shop-products"
   );
   return res?.data?.products;
 };
