@@ -47,7 +47,9 @@
     "styled-components": "^6.1.19",
     "swagger-autogen": "^2.23.7",
     "swagger-ui-express": "^5.0.1",
-    "uuid": "^11.1.0"
+    "ua-parser-js": "^2.0.5",
+    "uuid": "^11.1.0",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@nx/esbuild": "21.0.3",

@@ -628,7 +628,8 @@ export const getAllProducts = async (
       {
         model: models.Shop,
         as: "shop",
-        attributes: ["id", "name", "description"], // pick only what you need
+        // attributes: ["id", "name", "description","ratings"], // pick only what you need
+        include: [{ model: models.Image, as: "logo", attributes: ["url"] }],
       },
       { model: models.Event, as: "events" },
       { model: models.Image, as: "images" },
@@ -667,7 +668,7 @@ export const getAllProducts = async (
       limit: 10,
       order,
     });
-    console.log("latest prod: ", products);
+
     res.status(200).json({
       success: true,
       products,

@@ -5,10 +5,13 @@ import { HeartIcon, Search, ShoppingCartIcon } from "lucide-react";
 import HeaderBottom from "./header-bottom";
 import useUser from "../../hooks/useUser";
 import HeaderUser from "./header-user";
+import { useStore } from "../../store";
 
 const Header = () => {
   const { isLoading, user } = useUser();
-  console.log(user);
+  const wishlist = useStore((state) => state.wishlist);
+  const cart = useStore((state) => state.cart);
+
   return (
     <div className="w-full bg-white">
       <div className="w-[80%] py-5 m-auto flex items-center justify-between">
@@ -29,18 +32,22 @@ const Header = () => {
           </div>
         </div>
         <div className="flex items-center gap-8">
-        <HeaderUser  user={user} isLoading={isLoading} />
+          <HeaderUser user={user} isLoading={isLoading} />
           <div className="flex items-center gap-5">
             <Link href="/wishlist" className="relative">
               <HeartIcon color="black" />
               <div className="w-6 h-6 border-2 border-white bg-red-500 rounded-full flex items-center justify-center absolute top-[-10px] right-[-10px]">
-                <span className="text-sm text-white font-medium">0</span>
+                <span className="text-sm text-white font-medium">
+                  {wishlist?.length || 0}
+                </span>
               </div>
             </Link>
             <Link href="/cart" className="relative">
               <ShoppingCartIcon color="black" />
               <div className="w-6 h-6 border-2 border-white bg-red-500 rounded-full flex items-center justify-center absolute top-[-10px] right-[-10px]">
-                <span className="text-sm text-white font-medium">0</span>
+                <span className="text-sm text-white font-medium">
+                  {cart?.length || 0}
+                </span>
               </div>
             </Link>
           </div>

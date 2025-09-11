@@ -6,13 +6,13 @@ import {
   ChevronUp,
   HeartIcon,
   ShoppingCartIcon,
-  UserIcon,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 
 import { navItems } from "../../configs/constants";
 import HeaderUser from "./header-user";
+import { useStore } from "../../store";
 
 const HeaderBottom = ({
   isLoading,
@@ -23,6 +23,9 @@ const HeaderBottom = ({
 }) => {
   const [show, setShow] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
+
+  const wishlist = useStore((state) => state.wishlist);
+  const cart = useStore((state) => state.cart);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -92,13 +95,17 @@ const HeaderBottom = ({
                 <Link href="/wishlist" className="relative">
                   <HeartIcon color="black" />
                   <div className="w-6 h-6 border-2 border-white bg-red-500 rounded-full flex items-center justify-center absolute top-[-10px] right-[-10px]">
-                    <span className="text-sm text-white font-medium">0</span>
+                    <span className="text-sm text-white font-medium">
+                      {wishlist?.length || 0}
+                    </span>
                   </div>
                 </Link>
                 <Link href="/cart" className="relative">
                   <ShoppingCartIcon color="black" />
                   <div className="w-6 h-6 border-2 border-white bg-red-500 rounded-full flex items-center justify-center absolute top-[-10px] right-[-10px]">
-                    <span className="text-sm text-white font-medium">0</span>
+                    <span className="text-sm text-white font-medium">
+                      {cart?.length || 0}
+                    </span>
                   </div>
                 </Link>
               </div>

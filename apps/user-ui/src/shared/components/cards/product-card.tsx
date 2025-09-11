@@ -4,6 +4,11 @@ import Ratings from "apps/user-ui/src/ratings";
 import { Eye, Heart, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import React, { useEffect } from "react";
+import ProductQuickViewCard from "./product-quickview-card";
+import { useStore } from "apps/user-ui/src/store";
+import useUser from "apps/user-ui/src/hooks/useUser";
+import useLocationTracking from "apps/user-ui/src/hooks/useLocationTracking";
+import useDeviceTracking from "apps/user-ui/src/hooks/useDeviceTracking";
 
 const ProductCard = ({
   product,
@@ -12,8 +17,25 @@ const ProductCard = ({
   product: any;
   isEvent?: boolean;
 }) => {
+  const [open, setOpen] = React.useState(false);
   const [timeLeft, setTimeLeft] = React.useState<string | null>(null);
+  const user = useUser();
+  const location = useLocationTracking();
+  const newLocation = location?.latitude
+    ? `${location?.city ? location?.city + ", " : ""}${
+        location?.country ? location?.country : ""
+      }`
+    : "Unknown";
+  const deviceInfo = useDeviceTracking();
+  const addToCart = useStore((state) => state.addToCart);
+  const addToWishlist = useStore((state) => state.addToWishlist);
+  const removeFromCart = useStore((state) => state.removeFromCart);
+  const removeFromWishlist = useStore((state) => state.removeFromWishlist);
+  const wishlist = useStore((state) => state.wishlist);
+  const cart = useStore((state) => state.cart);
 
+  const isInWishlist = wishlist?.some((item) => item.id === product?.id);
+  const isInCart = cart?.some((item) => item.id === product?.id);
   useEffect(() => {
     if (!isEvent || !product?.events?.endDate) return;
 
@@ -47,6 +69,31 @@ const ProductCard = ({
     return () => clearInterval(timer);
   }, [product?.events, isEvent]);
 
+  const handleCart = () => {
+    if (isInCart) {
+      removeFromCart(product?.id, user, newLocation, deviceInfo as string);
+    } else {
+      addToCart(
+        { ...product, quantity: 1 },
+        user,
+        newLocation,
+        deviceInfo as string
+      );
+    }
+  };
+  const handleWishlist = () => {
+    if (isInWishlist) {
+      removeFromWishlist(product?.id, user, newLocation, deviceInfo as string);
+    } else {
+      addToWishlist(
+        { ...product, quantity: 1 },
+        user,
+        newLocation,
+        deviceInfo as string
+      );
+    }
+  };
+  
   return (
     <div className="w-full min-h-[350px] h-max bg-white rounded-lg relative">
       {isEvent && (
@@ -128,24 +175,37 @@ const ProductCard = ({
         <div className="bg-white rounded-full p-[6px] shadow-lg">
           <Heart
             size={22}
-            fill={"red"}
-            stroke={"red"}
+            fill={isInWishlist ? "red" : "transparent"}
+            stroke={isInWishlist ? "red" : "#4b5563"}
+            color="transparent"
+            onClick={handleWishlist}
             className="cursor-pointer hover:scale-110 transition-transform duration-200"
           />
         </div>
         <div className="bg-white rounded-full p-[6px] shadow-lg">
           <Eye
             size={22}
+            onClick={() => setOpen(true)}
             className="cursor-pointer text-[#4b5563] hover:scale-110 transition-transform duration-200"
           />
         </div>
         <div className="bg-white rounded-full p-[6px] shadow-lg">
           <ShoppingBag
             size={22}
+            onClick={handleCart}
             className="cursor-pointer text-[#4b5563] hover:scale-110 transition-transform duration-200"
           />
         </div>
       </div>
+      {open && (
+        <ProductQuickViewCard
+          user={user}
+          deviceInfo={deviceInfo}
+          location={newLocation}
+          product={product}
+          setOpen={setOpen}
+        />
+      )}
     </div>
   );
 };
