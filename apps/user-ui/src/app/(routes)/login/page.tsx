@@ -81,7 +81,7 @@ const LoginPage = () => {
             <input
               type="email"
               placeholder="Enter valid email"
-              className="inputt"
+              className="input-1"
               {...register("email", {
                 required: "Email is required",
                 pattern: {

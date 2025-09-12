@@ -4,14 +4,10 @@ import { persist } from "zustand/middleware";
 interface Product {
   id: string;
   title: string;
-  slug: string;
-  image: string;
-  reviewCount?: number;
-  stock: number;
   salePrice: number;
+  images: { url: string }[];
   quantity?: number;
-  totalSales?: number;
-  shopId: string;
+  [key: string]: any; // For any other product properties
 }
 
 type Store = {
@@ -98,7 +94,7 @@ export const useStore = create<Store>(
       });
     },
     removeFromWishlist: (productId, user, location, deviceInfo) => {
-          const removeProduct = get().wishlist.find(
+      const removeProduct = get().wishlist.find(
         (item: { id: string }) => item.id === productId
       );
       if (!removeProduct) return; // Product not found
@@ -110,7 +106,7 @@ export const useStore = create<Store>(
     },
     clearWishlist: () => set({ wishlist: [] }),
   })),
-  
+
   { name: "store-store" } // unique name for storage
 );
 

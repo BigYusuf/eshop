@@ -142,7 +142,7 @@ const RegisterPage = () => {
               <input
                 type="text"
                 placeholder="Enter valid First name"
-                className="inputt"
+                className="input-1"
                 {...register("firstName", {
                   required: "First Name is required",
                   minLength: {
@@ -162,7 +162,7 @@ const RegisterPage = () => {
               <input
                 type="text"
                 placeholder="Enter valid Last name"
-                className="inputt"
+                className="input-1"
                 {...register("lastName", {
                   required: "Last Name is required",
                   minLength: {
@@ -183,7 +183,7 @@ const RegisterPage = () => {
               <input
                 type="email"
                 placeholder="Enter valid email"
-                className="inputt"
+                className="input-1"
                 {...register("email", {
                   required: "Email is required",
                   pattern: {

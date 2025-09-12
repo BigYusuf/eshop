@@ -69,13 +69,13 @@ export default function FormField<T extends FieldValues, O extends object = any>
           id={name}
           rows={props.rows || 3}
           placeholder={placeholder}
-          className={`inputt ${className}`}
+          className={`input-1 ${className}`}
           {...register(name, rules)}
         />
       ) : props.as === "select" ? (
         <select
           id={name}
-          className={`inputt ${className}`}
+          className={`input-1 ${className}`}
           {...register(name, rules)}
         >
           {props.includePlaceholder && (
@@ -99,7 +99,7 @@ export default function FormField<T extends FieldValues, O extends object = any>
                 : props.type || "text"
             }
             placeholder={placeholder}
-            className={`inputt ${className}`}
+            className={`input-1 ${className}`}
             {...register(name, rules)}
           />
           {props.type === "password" && (

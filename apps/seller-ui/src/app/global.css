@@ -51,7 +51,7 @@ body {
 .error-text {
   @apply text-red-500 text-sm;
 }
-.inputt {
+.input-1 {
   @apply w-full p-2 border border-gray-300 outline-0 rounded mb-1;
 }
 .input-2 {
