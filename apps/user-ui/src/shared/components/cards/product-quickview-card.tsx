@@ -21,7 +21,7 @@ const ProductQuickViewCard = ({
 }: {
   product: any;
   user: any;
-  location: string;
+  location: any;
   deviceInfo?: any;
   setOpen?: (x: boolean) => void;
 }) => {
@@ -36,36 +36,38 @@ const ProductQuickViewCard = ({
   const router = useRouter();
   const addToCart = useStore((state) => state.addToCart);
   const addToWishlist = useStore((state) => state.addToWishlist);
-  const removeFromCart = useStore((state) => state.removeFromCart);
+  // const removeFromCart = useStore((state) => state.removeFromCart);
   const removeFromWishlist = useStore((state) => state.removeFromWishlist);
   const wishlist = useStore((state) => state.wishlist);
-  const cart = useStore((state) => state.cart);
+  // const cart = useStore((state) => state.cart);
 
   const isInWishlist = wishlist?.some((item) => item.id === product?.id);
-  const isInCart = cart?.some((item) => item.id === product?.id);
+  // const isInCart = cart?.some((item) => item.id === product?.id);
 
-    const handleCart = () => {
-    if (isInCart) {
-      removeFromCart(product?.id, user, location, deviceInfo as string);
-    } else {
-      addToCart(
-        { ...product, quantity },
-        user,
-        location,
-        deviceInfo as string
-      );
-    }
+  const handleCart = () => {
+    // if (isInCart) {
+    //   removeFromCart(product?.id, user, location, deviceInfo as string);
+    // } else {
+    addToCart(
+      {
+        ...product,
+        quantity,
+        selectedOptions: {
+          color: isSelectedColor,
+          size: isSelectedSize,
+        },
+      },
+      user,
+      location,
+      deviceInfo
+    );
+    // }
   };
   const handleWishlist = () => {
     if (isInWishlist) {
-      removeFromWishlist(product?.id, user, location, deviceInfo as string);
+      removeFromWishlist(product?.id, user, location, deviceInfo);
     } else {
-      addToWishlist(
-        { ...product, quantity: 1 },
-        user,
-        location,
-        deviceInfo as string
-      );
+      addToWishlist({ ...product, quantity: 1 }, user, location, deviceInfo);
     }
   };
   return (
@@ -248,7 +250,10 @@ const ProductQuickViewCard = ({
                 </button>
               </div>
               <div className="flex gap-4">
-                <button onClick={handleCart} className="w-full bg-blue-600 text-white font-medium px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                <button
+                  onClick={handleCart}
+                  className="w-full bg-blue-600 text-white font-medium px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                >
                   <ShoppingBag size={18} className="inline-block mr-2" />
                   Add to Cart
                 </button>

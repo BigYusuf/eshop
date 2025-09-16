@@ -14,13 +14,7 @@ import { navItems } from "../../configs/constants";
 import HeaderUser from "./header-user";
 import { useStore } from "../../store";
 
-const HeaderBottom = ({
-  isLoading,
-  user,
-}: {
-  isLoading: boolean;
-  user: any;
-}) => {
+const HeaderBottom = () => {
   const [show, setShow] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
 
@@ -90,7 +84,7 @@ const HeaderBottom = ({
           ))}
           {isSticky && (
             <div className="flex items-center gap-8">
-              <HeaderUser user={user?.user} isLoading={isLoading} />
+              <HeaderUser />
               <div className="flex items-center gap-5">
                 <Link href="/wishlist" className="relative">
                   <HeartIcon color="black" />

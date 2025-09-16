@@ -2,7 +2,10 @@ import Redis from "ioredis";
 import dotenv from "dotenv";
 dotenv.config();
 
-const redis = new Redis(`${process.env.REDIS_URL}`);
+const redis = new Redis(process.env.REDIS_URL as string, {
+   tls: {}, // required for Upstash TLS
+  connectTimeout: 10000, // 10s
+});
 
 redis.on("connect", () => {
   console.log("🔗 Redis connected");

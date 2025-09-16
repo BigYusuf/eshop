@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "types": ["node", "express"],
+    "rootDir": "../../",
+    "moduleResolution": "nodenext",
+    "tsBuildInfoFile": "dist/tsconfig.app.tsbuildinfo"
+  },
+  "include": ["src/**/*.ts", "../../packages/**/*.ts", "../../db/**/*.ts"],
+  "exclude": [],
+  "references": [
+    {
+      "path": "../../db/tsconfig.lib.json"
+    }
+  ]
+}

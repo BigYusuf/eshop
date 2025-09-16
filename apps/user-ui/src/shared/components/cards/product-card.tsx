@@ -21,11 +21,7 @@ const ProductCard = ({
   const [timeLeft, setTimeLeft] = React.useState<string | null>(null);
   const user = useUser();
   const location = useLocationTracking();
-  const newLocation = location?.latitude
-    ? `${location?.city ? location?.city + ", " : ""}${
-        location?.country ? location?.country : ""
-      }`
-    : "Unknown";
+
   const deviceInfo = useDeviceTracking();
   const addToCart = useStore((state) => state.addToCart);
   const addToWishlist = useStore((state) => state.addToWishlist);
@@ -36,6 +32,7 @@ const ProductCard = ({
 
   const isInWishlist = wishlist?.some((item) => item.id === product?.id);
   const isInCart = cart?.some((item) => item.id === product?.id);
+
   useEffect(() => {
     if (!isEvent || !product?.events?.endDate) return;
 
@@ -71,29 +68,59 @@ const ProductCard = ({
 
   const handleCart = () => {
     if (isInCart) {
-      removeFromCart(product?.id, user, newLocation, deviceInfo as string);
+      removeFromCart(
+        product?.id,
+        user?.user || null,
+        location || null,
+        deviceInfo || null
+      );
     } else {
       addToCart(
         { ...product, quantity: 1 },
-        user,
-        newLocation,
-        deviceInfo as string
+        user?.user || null,
+        location || {
+          country: "Unknown Country",
+          city: "Unknown City",
+          ip: "Unknown",
+          lat: "Unknown",
+          lon: "Unknown",
+        },
+        deviceInfo || {
+          device: "Unknown Device",
+          os: "Unknown OS",
+          browser: "Unknown",
+        }
       );
     }
   };
   const handleWishlist = () => {
     if (isInWishlist) {
-      removeFromWishlist(product?.id, user, newLocation, deviceInfo as string);
+      removeFromWishlist(
+        product?.id,
+        user?.user || null,
+        location || null,
+        deviceInfo || null
+      );
     } else {
       addToWishlist(
         { ...product, quantity: 1 },
-        user,
-        newLocation,
-        deviceInfo as string
+        user?.user || null,
+        location || {
+          country: "Unknown Country",
+          city: "Unknown City",
+          ip: "Unknown",
+          lat: "Unknown",
+          lon: "Unknown",
+        },
+        deviceInfo || {
+          device: "Unknown Device",
+          os: "Unknown OS",
+          browser: "Unknown",
+        }
       );
     }
   };
-  
+
   return (
     <div className="w-full min-h-[350px] h-max bg-white rounded-lg relative">
       {isEvent && (
@@ -199,9 +226,9 @@ const ProductCard = ({
       </div>
       {open && (
         <ProductQuickViewCard
-          user={user}
-          deviceInfo={deviceInfo}
-          location={newLocation}
+          user={user?.user || null}
+          deviceInfo={deviceInfo || null}
+          location={location || null}
           product={product}
           setOpen={setOpen}
         />

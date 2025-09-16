@@ -1,8 +1,10 @@
 import { UserIcon } from "lucide-react";
 import Link from "next/link";
 import React from "react";
+import useUser from "../../hooks/useUser";
 
-const HeaderUser = ({ user, isLoading }: { user: any; isLoading: boolean }) => {
+const HeaderUser = () => {
+  const { isLoading, user } = useUser();
   return (
     <div className="flex items-center gap-2">
       <Link
@@ -11,10 +13,10 @@ const HeaderUser = ({ user, isLoading }: { user: any; isLoading: boolean }) => {
       >
         <UserIcon color="black" />
       </Link>
-      <Link href="/login">
+      <Link href={user ? "/profile" : "/login"}>
         <span className="block font-medium">Hello</span>
         <span className="font-semibold capitalize">
-          {isLoading ? "..." : user ? user?.firstName : "SIgn in"}
+          {isLoading ? "..." : user ? user?.firstName : "Sign in"}
         </span>
       </Link>
     </div>

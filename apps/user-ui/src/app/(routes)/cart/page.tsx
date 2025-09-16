@@ -13,11 +13,7 @@ import React, { useState } from "react";
 const CartPage = () => {
   const user = useUser();
   const location = useLocationTracking();
-  const newLocation = location?.lat
-    ? `${location?.city ? location?.city + ", " : ""}${
-        location?.country ? location?.country : ""
-      }`
-    : "Unknown";
+
   const deviceInfo = useDeviceTracking();
   const addToCart = useStore((state) => state.addToCart);
   const removeFromCart = useStore((state) => state.removeFromCart);
@@ -47,7 +43,7 @@ const CartPage = () => {
     }));
   };
   const removeItem = (id: string) => {
-    removeFromCart(id, user || "", newLocation, deviceInfo as any);
+    removeFromCart(id, user?.user, location || null, deviceInfo || null);
   };
   // Each cart item should have: price, quantity
   const subtotal = cart.reduce(
@@ -141,11 +137,11 @@ const CartPage = () => {
                                     Size: {item?.selectedOptions?.size}
                                   </span>
                                 )}
-                                {item.selectedOptions.map((opt: any) => (
+                                {/* {item.selectedOptions.map((opt: any) => (
                                   <span key={opt.name}>
                                     {opt.name}: {opt.value}
                                   </span>
-                                ))}
+                                ))} */}
                               </div>
                             )}
                           </div>

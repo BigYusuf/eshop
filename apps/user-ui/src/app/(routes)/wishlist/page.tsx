@@ -11,11 +11,7 @@ import React from "react";
 const WishlistPage = () => {
   const user = useUser();
   const location = useLocationTracking();
-  const newLocation = location?.lat
-    ? `${location?.city ? location?.city + ", " : ""}${
-        location?.country ? location?.country : ""
-      }`
-    : "Unknown";
+
   const deviceInfo = useDeviceTracking();
   const addToCart = useStore((state) => state.addToCart);
   const removeFromWishlist = useStore((state) => state.removeFromWishlist);
@@ -37,16 +33,13 @@ const WishlistPage = () => {
     }));
   };
   const removeItem = (id: string) => {
-    removeFromWishlist(id, user || "", newLocation, deviceInfo as any);
+    removeFromWishlist(id, user?.user || null, location || null, deviceInfo || null);
   };
   return (
     <div className="w-full bg-white min-h-screen p-4">
       <div className="w-[90%] md:w-[80%] mx-auto min-h-screen">
         {/* Header & Breadcrumbs */}
-        {/* <PageHeader
-          title="Wislist"
-          breadcrumb={[{ label: "Home", href: "/" }, { label: "Wishlist" }]}
-        /> */}
+
         <div className="pb-[50px]">
           <h1 className="md:pt-[50px] font-medium text-[44px] leading-[1] mb-[16px] font-jost">
             Wishlist
@@ -108,7 +101,22 @@ const WishlistPage = () => {
                     <td className="">
                       <button
                         onClick={() =>
-                          addToCart(item, user, newLocation, deviceInfo as any)
+                          addToCart(
+                            item,
+                            user?.user || null,
+                            location || {
+                              country: "Unknown Country",
+                              city: "Unknown City",
+                              ip: "Unknown",
+                              lat: "Unknown",
+                              lon: "Unknown",
+                            },
+                            deviceInfo || {
+                              device: "Unknown Device",
+                              os: "Unknown OS",
+                              browser: "Unknown",
+                            }
+                          )
                         }
                         className="text-white bg-[#2295ff] cursor-pointer px-5 py-2 rounded-md transition-all hover:bg-[#007bff]"
                       >

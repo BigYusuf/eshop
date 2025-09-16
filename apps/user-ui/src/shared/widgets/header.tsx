@@ -54,7 +54,7 @@ const Header = () => {
         </div>
       </div>
       <div className="border-b border-b-[#99999938">
-        <HeaderBottom user={user} isLoading={isLoading} />
+        <HeaderBottom />
       </div>
     </div>
   );
