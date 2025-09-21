@@ -17,6 +17,7 @@ import { UserAnalytics } from "./model/user.analytic.model.js";
 import { ProductAnalytics } from "./model/product.analytic.model.js";
 import { UserAnalyticsHistory } from "./model/user.analytic.history.model.js";
 import { ProductInteractionHistory } from "./model/product.interaction.model.js";
+import { ShopFollower } from "./model/shop.follow.model.js";
 
 const models = {
   User,
@@ -36,6 +37,7 @@ const models = {
   ProductAnalytics,
   ProductInteractionHistory,
   Event,
+  ShopFollower,
 };
 
 // init models

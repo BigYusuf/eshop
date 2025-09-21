@@ -7,7 +7,8 @@ import {
   ValidationError,
 } from "@packages/error-handler";
 import { imagekit } from "@packages/libs/imagkit";
-// import { AuthError, ValidationError } from "../../../../packages/error-handler";
+import { Op } from "sequelize";
+import { recalcRatings } from "../utils/recal";
 
 // Extend Request type to include seller
 interface AuthenticatedRequest extends Request {
@@ -682,6 +683,603 @@ export const getAllProducts = async (
         totalPages: Math.ceil(count / limit),
       },
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getProductDetails = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { slug } = req.params;
+
+    const product = await models.Product.findOne({
+      where: { slug: slug, isDeleted: false },
+      include: [
+        {
+          model: models.Shop,
+          as: "shop",
+          attributes: ["id", "name", "description", "ratings", "openingHours"], // pick only what you need
+          include: [
+            { model: models.Image, as: "logo", attributes: ["url"] },
+            { model: models.Seller, as: "seller" },
+          ],
+        },
+        { model: models.Event, as: "events" },
+        { model: models.Image, as: "images" },
+        { model: models.Category, as: "category" },
+        { model: models.SubCategory, as: "subCategory" },
+      ],
+    });
+
+    if (!product) {
+      return next(new NotFoundError("Product not found"));
+    }
+
+    // // increment views
+    // product.views += 1;
+    // await product.save();
+
+    res.status(200).json({
+      success: true,
+      product,
+      message: "Product retrieved successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// get filtered products
+export const getFilteredProducts = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const {
+      priceRange = "0,10000",
+      categories,
+      colors,
+      sizes,
+      page = "1",
+      limit = "22",
+    } = req.query;
+
+    const parsedPriceRange = String(priceRange).split(",").map(Number);
+    const parsedPage = Math.max(1, Number(page) || 1);
+    const parsedLimit = Math.max(1, Number(limit) || 22);
+    const skip = (parsedPage - 1) * parsedLimit;
+
+    const filters: any = {
+      salePrice: {
+        [Op.gte]: parsedPriceRange[0],
+        [Op.lte]: parsedPriceRange[1],
+      },
+    };
+
+    if (categories) {
+      const parsedCategories = Array.isArray(categories)
+        ? categories
+        : String(categories).split(",").filter(Boolean); // remove ""
+
+      if (parsedCategories.length > 0) {
+        filters.categoryId = {
+          [Op.in]: parsedCategories,
+        };
+      }
+    }
+
+    if (colors) {
+      const parsedColors = Array.isArray(colors)
+        ? colors
+        : String(colors).split(",").filter(Boolean);
+
+      if (parsedColors.length > 0) {
+        filters.colors = { [Op.overlap]: parsedColors };
+      }
+    }
+
+    if (sizes) {
+      const parsedSizes = Array.isArray(sizes)
+        ? sizes
+        : String(sizes).split(",").filter(Boolean);
+
+      if (parsedSizes.length > 0) {
+        filters.sizes = { [Op.overlap]: parsedSizes };
+      }
+    }
+
+    const include = [
+      {
+        model: models.Shop,
+        as: "shop",
+        include: [{ model: models.Image, as: "logo", attributes: ["url"] }],
+      },
+      { model: models.Event, as: "events" },
+      { model: models.Image, as: "images" },
+      { model: models.Category, as: "category" },
+      { model: models.SubCategory, as: "subCategory" },
+    ];
+
+    const { count, rows: products } = await models.Product.findAndCountAll({
+      where: filters,
+      include,
+      limit: parsedLimit,
+      offset: skip,
+    });
+
+    res.status(200).json({
+      success: true,
+      products,
+      pagination: {
+        total: count,
+        page: parsedPage,
+        totalPages: Math.ceil(count / parsedLimit),
+      },
+      message: "Products retrieved successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// get filtered offers
+export const getFilteredEvents = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const {
+      priceRange = "0,10000",
+      categories,
+      colors,
+      sizes,
+      page = "1",
+      limit = "22",
+    } = req.query;
+
+    const parsedPriceRange = String(priceRange).split(",").map(Number);
+    const parsedPage = Math.max(1, Number(page) || 1);
+    const parsedLimit = Math.max(1, Number(limit) || 22);
+    const skip = (parsedPage - 1) * parsedLimit;
+
+    // Filters for events
+    const eventFilters: any = {
+      startingDate: { [Op.not]: null }, // only events with a date
+    };
+
+    // Product-related filters (applied when joining products)
+    const productFilters: any = {
+      salePrice: {
+        [Op.gte]: parsedPriceRange[0],
+        [Op.lte]: parsedPriceRange[1],
+      },
+    };
+
+    if (categories) {
+      productFilters.categoryId = {
+        [Op.in]: Array.isArray(categories)
+          ? categories
+          : String(categories).split(","),
+      };
+    }
+
+    if (colors) {
+      productFilters.colors = {
+        [Op.overlap]: Array.isArray(colors) ? colors : [colors],
+      };
+    }
+
+    if (sizes) {
+      productFilters.sizes = {
+        [Op.overlap]: Array.isArray(sizes) ? sizes : [sizes],
+      };
+    }
+
+    // Includes: shop, products (through pivot), discountCodes
+    const include = [
+      {
+        model: models.Shop,
+        as: "shop",
+        include: [{ model: models.Image, as: "logo", attributes: ["url"] }],
+      },
+      {
+        model: models.Product,
+        as: "products",
+        through: { attributes: [] }, // hide pivot fields
+        where: productFilters, // apply product filters
+        required: true, // ensures events must have products matching filters
+        include: [
+          { model: models.Image, as: "images" },
+          { model: models.Category, as: "category" },
+          { model: models.SubCategory, as: "subCategory" },
+        ],
+      },
+      { model: models.DiscountCode, as: "discountCodes" },
+    ];
+
+    const { count, rows: events } = await models.Event.findAndCountAll({
+      where: eventFilters,
+      include,
+      limit: parsedLimit,
+      offset: skip,
+      distinct: true, // ensures proper count when joining many products
+    });
+
+    res.status(200).json({
+      success: true,
+      events,
+      pagination: {
+        total: count,
+        page: parsedPage,
+        totalPages: Math.ceil(count / parsedLimit),
+      },
+      message: "Events retrieved successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+//get filtered shops
+export const getFilteredShops = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const {
+      priceRange = "0,10000",
+      categories,
+      countries,
+      page = "1",
+      limit = "12",
+    } = req.query;
+
+    const parsedPriceRange = String(priceRange).split(",").map(Number);
+    const parsedPage = Math.max(1, Number(page) || 1);
+    const parsedLimit = Math.max(1, Number(limit) || 12);
+    const skip = (parsedPage - 1) * parsedLimit;
+
+    // Filters for shops
+    const shopFilters: any = {};
+
+    if (categories) {
+      shopFilters.category = {
+        [Op.in]: Array.isArray(categories)
+          ? categories
+          : String(categories).split(","),
+      };
+    }
+
+    if (countries) {
+      shopFilters["$seller.country$"] = {
+        [Op.in]: Array.isArray(countries)
+          ? countries
+          : String(countries).split(","),
+      };
+    }
+
+    // Product-related filters
+    const productFilters: any = {
+      salePrice: {
+        [Op.gte]: parsedPriceRange[0],
+        [Op.lte]: parsedPriceRange[1],
+      },
+    };
+
+    // Includes: seller, products, logo/banner, reviews, socialLinks, etc.
+    const include = [
+      {
+        model: models.Seller,
+        as: "seller",
+        attributes: ["id", "firstName", "lastName", "email", "country"],
+        include: [{ model: models.Image, as: "avatar", attributes: ["url"] }],
+      },
+      {
+        model: models.Product,
+        as: "products",
+        where: productFilters,
+        required: false, // shop can still show even if no product matches filter
+        include: [
+          { model: models.Image, as: "images" },
+          { model: models.Category, as: "category" },
+          { model: models.SubCategory, as: "subCategory" },
+        ],
+      },
+      { model: models.Image, as: "logo", attributes: ["url"] },
+      { model: models.Image, as: "banner", attributes: ["url"] },
+      { model: models.ShopReview, as: "shop_reviews" },
+      { model: models.ShopSocialLink, as: "socialLinks" },
+      { model: models.Event, as: "events" },
+      { model: models.DiscountCode, as: "discountCodes" },
+    ];
+
+    const { count, rows: shops } = await models.Shop.findAndCountAll({
+      where: shopFilters,
+      include,
+      limit: parsedLimit,
+      offset: skip,
+      distinct: true, // ✅ ensures count isn’t inflated by product joins
+    });
+
+    res.status(200).json({
+      success: true,
+      shops,
+      pagination: {
+        total: count,
+        page: parsedPage,
+        totalPages: Math.ceil(count / parsedLimit),
+      },
+      message: "Shops retrieved successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+//search product
+export const searchProducts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const {
+      query = "",
+      page = "1",
+      limit = "20",
+    } = req.query as { query?: string; page?: string; limit?: string };
+
+    const parsedPage = Math.max(1, Number(page) || 1);
+    const parsedLimit = Math.max(1, Number(limit) || 20);
+    const skip = (parsedPage - 1) * parsedLimit;
+
+    // Build search filter
+    const filters: any = {
+      isDeleted: false,
+      status: "active",
+    };
+
+    if (query) {
+      filters[Op.or] = [
+        { title: { [Op.iLike]: `%${query}%` } },
+        { brand: { [Op.iLike]: `%${query}%` } },
+        { shortDescription: { [Op.iLike]: `%${query}%` } },
+        { detailedDescription: { [Op.iLike]: `%${query}%` } },
+        { tags: { [Op.overlap]: [query.toLowerCase()] } }, // tags array
+      ];
+    }
+
+    const include = [
+      {
+        model: models.Shop,
+        as: "shop",
+        include: [{ model: models.Image, as: "logo", attributes: ["url"] }],
+      },
+      { model: models.Image, as: "images" },
+      { model: models.Category, as: "category" },
+      { model: models.SubCategory, as: "subCategory" },
+      { model: models.Event, as: "events" },
+      { model: models.ProductReview, as: "product_reviews" },
+      { model: models.DiscountCode, as: "discountCodes" },
+    ];
+
+    const { count, rows: products } = await models.Product.findAndCountAll({
+      where: filters,
+      include,
+      limit: parsedLimit,
+      offset: skip,
+      distinct: true, // ✅ avoids inflated count due to includes
+      order: [["createdAt", "DESC"]],
+    });
+
+    res.status(200).json({
+      success: true,
+      products,
+      pagination: {
+        total: count,
+        page: parsedPage,
+        totalPages: Math.ceil(count / parsedLimit),
+      },
+      message: "Products retrieved successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+//top shops
+export const getTopShops = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const {
+      page = "1",
+      limit = "10",
+      sortBy = "followerCount", // 👈 default sort
+      order = "DESC", // DESC = highest first
+    } = req.query as {
+      page?: string;
+      limit?: string;
+      sortBy?: string;
+      order?: string;
+    };
+
+    const parsedPage = Math.max(1, Number(page) || 1);
+    const parsedLimit = Math.max(1, Number(limit) || 10);
+    const skip = (parsedPage - 1) * parsedLimit;
+
+    // ✅ allowed fields for sorting
+    const validSortFields = [
+      "followerCount",
+      "ratings",
+      "reviewCount",
+      "topSales",
+    ];
+    const sortField = validSortFields.includes(sortBy!)
+      ? sortBy!
+      : "followerCount";
+
+    const { count, rows: shops } = await models.Shop.findAndCountAll({
+      include: [
+        { model: models.Image, as: "logo", attributes: ["url"] },
+        { model: models.Image, as: "banner", attributes: ["url"] },
+        {
+          model: models.Product,
+          as: "products",
+          attributes: [
+            "id",
+            "title",
+            "salePrice",
+            "totalSales",
+            "averageRating",
+          ],
+        },
+      ],
+      limit: parsedLimit,
+      offset: skip,
+      order: [[sortField, order as string]],
+    });
+
+    res.status(200).json({
+      success: true,
+      shops,
+      pagination: {
+        total: count,
+        page: parsedPage,
+        totalPages: Math.ceil(count / parsedLimit),
+      },
+      message: "Top shops retrieved successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 👉 Create review
+export const createReview = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { productId, rating, review } = req.body;
+    const userId = req.user.id;
+
+    const existing = await models.ProductReview.findOne({
+      where: { productId, userId },
+    });
+    if (existing) {
+      return res
+        .status(400)
+        .json({ success: false, message: "You already reviewed this product" });
+    }
+
+    const newReview = await models.ProductReview.create({
+      productId,
+      userId,
+      rating,
+      review,
+    });
+    await recalcRatings(productId);
+
+    res
+      .status(201)
+      .json({ success: true, review: newReview, message: "Review created" });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// 👉 Update review
+export const updateReview = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const { rating, review } = req.body;
+    const userId = req.user.id;
+
+    const existing = await models.ProductReview.findOne({
+      where: { id, userId },
+    });
+    if (!existing) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Review not found" });
+    }
+
+    await existing.update({ rating, review });
+    await recalcRatings(existing.productId);
+
+    res
+      .status(200)
+      .json({ success: true, review: existing, message: "Review updated" });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// 👉 Delete review
+export const deleteReview = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const existing = await models.ProductReview.findOne({
+      where: { id, userId },
+    });
+    if (!existing) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Review not found" });
+    }
+
+    const productId = existing.productId;
+    await existing.destroy();
+    await recalcRatings(productId);
+
+    res.status(200).json({ success: true, message: "Review deleted" });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// 👉 Get all reviews for a product
+export const getProductReviews = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { productId } = req.params;
+
+    const reviews = await models.ProductReview.findAll({
+      where: { productId },
+      include: [
+        {
+          model: models.User,
+          attributes: ["id", "firstName", "lastName", "email"],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
+
+    res.status(200).json({ success: true, reviews });
   } catch (error) {
     next(error);
   }

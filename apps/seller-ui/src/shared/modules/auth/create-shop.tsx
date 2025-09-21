@@ -3,7 +3,7 @@ import React from "react";
 import axios, { AxiosError } from "axios";
 import { useForm } from "react-hook-form";
 import FormField from "../../components/form-field";
-import { shopCategories } from "apps/seller-ui/src/data/categories";
+import { shopCategories } from "packages/data/categories";
 import SubmitButton from "../../components/submit-btn";
 
 const CreateShop = ({

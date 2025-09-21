@@ -122,7 +122,7 @@ const ProductCard = ({
   };
 
   return (
-    <div className="w-full min-h-[350px] h-max bg-white rounded-lg relative">
+    <div className="w-full min-h-[350px] min-w-[250px] h-max bg-white rounded-lg relative">
       {isEvent && (
         <div className="absolute top-2 left-2 bg-red-600 text-white font-semibold text-xs px-2 py-1 rounded">
           OFFER
@@ -147,7 +147,7 @@ const ProductCard = ({
           src={
             product?.images && product?.images.length > 0
               ? product?.images[0]?.url
-              : "https://images.unsplash.com/photo-1635405074683-96d6921a2a68.png"
+              : "https://ik.imagekit.io/fz0xzwtey/products/product-1741207782553-0_-RWfpGzfHt.jpg"
           }
           alt={product?.title}
           className="w-full object-cover h-[200px] rounded-t-md mx-auto"

@@ -94,7 +94,7 @@ export const userLogin = async (
     if (!existingUser) {
       return next(new AuthError("Invalid Credential!"));
     }
-    
+
     // Verify paassword if user exist
     const isMatch = await bcrypt.compare(password, existingUser?.password);
     if (!isMatch) {
@@ -491,6 +491,136 @@ export const getSeller = async (
     res
       .status(201)
       .json({ success: true, message: "Seller data fetched!", seller });
+  } catch (error) {
+    next(error);
+  }
+};
+
+//follow shop
+
+export const followShop = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { shopId } = req.body;
+    const userId = req?.user?.id; // assuming user is authenticated
+
+    // check if already following
+    const existing = await models.ShopFollower.findOne({
+      where: { userId, shopId },
+    });
+    if (existing) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Already following this shop" });
+    }
+
+    const follow = await models.ShopFollower.create({ userId, shopId });
+
+    await models.Shop.increment("followerCount", {
+      by: 1,
+      where: { id: shopId },
+    });
+    return res.status(201).json({
+      success: true,
+      follow,
+      message: "Shop followed successfully",
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const unfollowShop = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { shopId } = req.body;
+    const userId = req.user.id;
+
+    const existing = await models.ShopFollower.findOne({
+      where: { userId, shopId },
+    });
+    if (!existing) {
+      return res
+        .status(404)
+        .json({ success: false, message: "You are not following this shop" });
+    }
+
+    await existing.destroy();
+
+    await models.Shop.decrement("followerCount", {
+      by: 1,
+      where: { id: shopId },
+    });
+    
+    res.status(200).json({
+      success: true,
+      message: "Unfollowed shop successfully",
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getFollowedShops = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.user.id;
+
+    const follows = await models.ShopFollower.findAll({
+      where: { userId },
+      include: [
+        {
+          model: models.Shop,
+          as: "shop",
+          include: [{ model: models.Image, as: "logo", attributes: ["url"] }],
+        },
+      ],
+    });
+
+    res.status(200).json({
+      success: true,
+      shops: follows.map((f) => f?.shop),
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// controllers/follower.controller.ts
+export const getShopFollowers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { shopId } = req.params;
+
+    const followers = await models.ShopFollower.findAll({
+      where: { shopId },
+      include: [
+        {
+          model: models.User,
+          as: "user",
+          attributes: ["id", "firstName", "lastName", "email", "avatar"], // adjust to your User model
+        },
+      ],
+    });
+
+    res.status(200).json({
+      success: true,
+      followers: followers.map((f) => f?.user),
+      count: followers.length,
+      message: "Followers retrieved successfully",
+    });
   } catch (error) {
     next(error);
   }

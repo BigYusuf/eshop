@@ -2,12 +2,16 @@ import express, { Router } from "express";
 import {
   connectBank,
   createShop,
+  followShop,
+  getFollowedShops,
   getSeller,
+  getShopFollowers,
   getUser,
   refreshTokenAuth,
   sellerLogin,
   sellerRegister,
   sellerVerify,
+  unfollowShop,
   userForgotPassword,
   userLogin,
   userRegister,
@@ -29,6 +33,9 @@ authroute.get("/user-logged-in", isAuth, getUser);
 authroute.post("/forgot-password-user", userForgotPassword);
 authroute.post("/reset-password-user", userResetPassword);
 authroute.post("/verify-forgot-password-user", verifyUserPassword);
+authroute.post("/follow", isAuth, followShop);
+authroute.post("/unfollow", isAuth, unfollowShop);
+authroute.get("/my-shops", isAuth, getFollowedShops);
 
 //both users & sellers
 authroute.post("/refresh-token", refreshTokenAuth);
@@ -40,5 +47,6 @@ authroute.post("/seller-verify", sellerVerify);
 authroute.get("/seller-logged-in", isAuth, isSeller, getSeller);
 authroute.post("/create-shop", createShop);
 authroute.post("/connect-bank", connectBank);
+authroute.get("/shop/:shopId/followers", isAuth, isSeller, getShopFollowers);
 
 export default authroute;

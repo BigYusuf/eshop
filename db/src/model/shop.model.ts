@@ -19,11 +19,14 @@ export class Shop extends Model<
   declare openingHours?: string;
   declare website?: string;
   declare ratings?: number;
+  declare followerCount?: number;
+  declare reviewCount?: number;
+  declare topSales?: number;
   declare category?: string; // or ENUM
 
   declare sellerId: ForeignKey<string>;
-  declare imageId?: ForeignKey<string>; 
-  declare bannerImageId?: ForeignKey<string>; 
+  declare imageId?: ForeignKey<string>;
+  declare bannerImageId?: ForeignKey<string>;
 
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
@@ -52,6 +55,18 @@ export class Shop extends Model<
         address: DataTypes.STRING,
         ratings: {
           type: DataTypes.FLOAT,
+          defaultValue: 0,
+        },
+        followerCount: {
+          type: DataTypes.INTEGER,
+          defaultValue: 0,
+        },
+        reviewCount: {
+          type: DataTypes.INTEGER,
+          defaultValue: 0,
+        },
+        topSales: {
+          type: DataTypes.INTEGER,
           defaultValue: 0,
         },
         sellerId: {
@@ -108,6 +123,12 @@ export class Shop extends Model<
     Shop.hasMany(models.ShopSocialLink, {
       foreignKey: "shopId",
       as: "socialLinks",
+    });
+    
+    Shop.hasMany(models.ShopFollower, {
+      foreignKey: "shopId",
+      as: "followers",
+      onDelete: "CASCADE",
     });
   }
 }

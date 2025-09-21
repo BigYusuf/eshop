@@ -6,7 +6,7 @@ import React, { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
-import { countryList } from "../../../data/countries";
+import { countryList } from "../../../../../../packages/data/countries";
 import CreateShop from "../../../shared/modules/auth/create-shop";
 import FormField from "../../../shared/components/form-field";
 import SubmitButton from "apps/seller-ui/src/shared/components/submit-btn";

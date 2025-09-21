@@ -2,16 +2,25 @@ import express, { Router } from "express";
 import {
   createDiscountCodes,
   createProduct,
+  createReview,
   deleteDiscountCode,
   deleteProduct,
   deleteProductImage,
+  deleteReview,
   getAllProducts,
   getCategories,
   getDiscountCodeById,
   getDiscountCodes,
+  getFilteredEvents,
+  getFilteredProducts,
+  getFilteredShops,
+  getProductDetails,
   getShopProducts,
+  getTopShops,
   restoreProduct,
+  searchProducts,
   updateDiscountCode,
+  updateReview,
   uploadProductImage,
 } from "../controllers/product.controller";
 import { isAuth, isSeller } from "@packages/middleware/isAuthenticated";
@@ -64,5 +73,15 @@ productroute.patch(
 );
 productroute.get("/get-shop-products", isAuth, isSeller, getShopProducts);
 productroute.get("/get-all-products", getAllProducts);
+productroute.get("/get-product/:slug", getProductDetails);
+productroute.get("/get-filtered-products", getFilteredProducts);
+productroute.get("/get-filtered-offers", getFilteredEvents);
+productroute.get("/get-filtered-shops", getFilteredShops);
+productroute.get("/search-products", searchProducts);
+productroute.get("/top-shops", getTopShops);
+
+productroute.post("/create-poduct-review", isAuth, createReview); // create review
+productroute.put("/update-product-review/:id", isAuth, updateReview); // update review
+productroute.delete("/delete-product-review/:id", isAuth, deleteReview); // delete review
 
 export default productroute;

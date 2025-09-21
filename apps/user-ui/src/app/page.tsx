@@ -6,6 +6,7 @@ import SectionTitle from "../shared/components/section-title";
 import HeroSection from "../shared/modules/hero";
 import axiosInstance from "../utils/axiosInstance";
 import ProductCard from "../shared/components/cards/product-card";
+import ShopCard from "../shared/components/cards/shop-card";
 
 export default function Page() {
   const {
@@ -35,6 +36,21 @@ export default function Page() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
+  const {
+    data: shops = [],
+    isLoading: isShopLoading,
+    isError: isShopError,
+  } = useQuery({
+    queryKey: ["top-shops"],
+    queryFn: async () => {
+      const res = await axiosInstance(
+        "product/api/product/top-shops?page=1&limit=10"
+      );
+      return res.data?.shops;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
   console.log("products12", products);
   return (
     <div className="bg-[#f5f5f5]">
@@ -53,6 +69,9 @@ export default function Page() {
             ))}
           </div>
         )}
+        {!isLoading && products?.length === 0 && (
+          <p>No products available yet!</p>
+        )}
         {!isLoading && !isError && (
           <div className="m-auto grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5">
             {products?.map((product: any) => (
@@ -60,6 +79,35 @@ export default function Page() {
             ))}
           </div>
         )}
+
+        <div className="my-8 block">
+          <SectionTitle title="Latest Products" />
+        </div>
+        {!isLoading && !isError && (
+          <div className="m-auto grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5">
+            {latestProducts?.map((product: any) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
+        {!isLoading && latestProducts?.length === 0 && (
+          <p className="text-center">No products available yet!</p>
+        )}
+        <div className="my-8 block">
+          <SectionTitle title="Top Shops" />
+        </div>
+        {!isShopLoading && !isShopError && (
+          <div className="m-auto grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5">
+            {shops?.map((shop: any) => (
+              <ShopCard key={shop.id} shop={shop} />
+            ))}
+          </div>
+        )}
+        {!isShopLoading && shops?.length === 0 && (
+          <p className="text-center">No shops available yet!</p>
+        )}
+
+        {/* All events  */}
       </div>
     </div>
   );
