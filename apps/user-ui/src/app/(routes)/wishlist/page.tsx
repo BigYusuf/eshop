@@ -2,6 +2,7 @@
 import useDeviceTracking from "apps/user-ui/src/hooks/useDeviceTracking";
 import useLocationTracking from "apps/user-ui/src/hooks/useLocationTracking";
 import useUser from "apps/user-ui/src/hooks/useUser";
+import TitleBreadCrumbs from "apps/user-ui/src/shared/components/title-bread-crumbs";
 import { useStore } from "apps/user-ui/src/store";
 import Image from "next/image";
 import Link from "next/link";
@@ -33,23 +34,18 @@ const WishlistPage = () => {
     }));
   };
   const removeItem = (id: string) => {
-    removeFromWishlist(id, user?.user || null, location || null, deviceInfo || null);
+    removeFromWishlist(
+      id,
+      user?.user || null,
+      location || null,
+      deviceInfo || null
+    );
   };
   return (
     <div className="w-full bg-white min-h-screen p-4">
       <div className="w-[90%] md:w-[80%] mx-auto min-h-screen">
         {/* Header & Breadcrumbs */}
-
-        <div className="pb-[50px]">
-          <h1 className="md:pt-[50px] font-medium text-[44px] leading-[1] mb-[16px] font-jost">
-            Wishlist
-          </h1>
-          <Link href={"/"} className="text-[#55585b] hover:underline">
-            Home
-          </Link>
-          <span className="inline-block mx-1 p-[1.5px] bg-[#a8acb0] rounded-full"></span>
-          <span className="text-[#55585b]">Wishlist</span>
-        </div>
+        <TitleBreadCrumbs title="Wishlist" subTitle="Wishlist" />
 
         {wishlist.length === 0 ? (
           <div className="text-center text-gray-600 text-lg">
