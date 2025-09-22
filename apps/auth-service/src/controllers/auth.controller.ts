@@ -557,7 +557,7 @@ export const unfollowShop = async (
       by: 1,
       where: { id: shopId },
     });
-    
+
     res.status(200).json({
       success: true,
       message: "Unfollowed shop successfully",
@@ -595,7 +595,6 @@ export const getFollowedShops = async (
   }
 };
 
-// controllers/follower.controller.ts
 export const getShopFollowers = async (
   req: Request,
   res: Response,
@@ -623,5 +622,117 @@ export const getShopFollowers = async (
     });
   } catch (error) {
     next(error);
+  }
+};
+
+export const createUserAddress = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req?.user?.id;
+    const { label, name, street, city, state, zip, country, isDefault } =
+      req.body;
+    if (!label || !name || !street || !city || !state || !zip || !country) {
+      return next(new ValidationError("All fieds required"));
+    }
+    // Optional: unset other defaults if this is new default
+    if (isDefault) {
+      await models?.Address.update({ isDefault: false }, { where: { userId } });
+    }
+
+    const address = await models?.Address.create({
+      userId,
+      label,
+      name,
+      street,
+      city,
+      state,
+      zip,
+      country,
+      isDefault,
+    });
+
+    res.status(201).json({ success: true, address });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getUserAddresses = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req?.user?.id;
+
+    const addresses = await models?.Address.findAll({
+      where: { userId },
+      order: [
+        ["isDefault", "DESC"],
+        ["createdAt", "DESC"],
+      ],
+    });
+
+    res.json({ success: true, addresses });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateUserAddress = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const userId = req?.user?.id;
+    const { isDefault, ...rest } = req.body;
+
+    // If setting this address as default → clear all others first
+    if (isDefault === true || isDefault === "true") {
+      await models.Address.update({ isDefault: false }, { where: { userId } });
+    }
+
+    const [updated] = await models.Address.update(
+      { ...rest, isDefault },
+      { where: { id, userId } }
+    );
+
+    if (!updated) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Address not found" });
+    }
+
+    const address = await models.Address.findByPk(id);
+    res.json({ success: true, address });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const deleteUserAddress = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const userId = req?.user?.id;
+
+    const deleted = await models?.Address.destroy({ where: { id, userId } });
+
+    if (!deleted)
+      return res
+        .status(404)
+        .json({ success: false, message: "Address not found" });
+
+    res.json({ success: true, message: "Address deleted" });
+  } catch (error) {
+    return next(error);
   }
 };

@@ -41,14 +41,14 @@ const ProductDetails = ({ productDetails }: { productDetails: any }) => {
   // const [recommendedProducts, setRecommendedProducts] = useState([]);
     const [recommendedProducts, setRecommendedProducts] = useState<any[]>([]);
 
-  const [timeLeft, setTimeLeft] = React.useState<string | null>(null);
+  // const [timeLeft, setTimeLeft] = React.useState<string | null>(null);
   const user = useUser();
   const location = useLocationTracking();
 
   const deviceInfo = useDeviceTracking();
   const addToCart = useStore((state) => state.addToCart);
   const addToWishlist = useStore((state) => state.addToWishlist);
-  const removeFromCart = useStore((state) => state.removeFromCart);
+  // const removeFromCart = useStore((state) => state.removeFromCart);
   const removeFromWishlist = useStore((state) => state.removeFromWishlist);
   const wishlist = useStore((state) => state.wishlist);
   const cart = useStore((state) => state.cart);

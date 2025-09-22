@@ -60,7 +60,7 @@ export default function Page() {
           <SectionTitle title="Sugested Products" />
         </div>
         {isLoading && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5">
+          <div className="gridder-2">
             {Array.from({ length: 10 }).map((_, index) => (
               <div
                 key={index}
@@ -73,7 +73,7 @@ export default function Page() {
           <p>No products available yet!</p>
         )}
         {!isLoading && !isError && (
-          <div className="m-auto grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5">
+          <div className="m-auto gridder-2">
             {products?.map((product: any) => (
               <ProductCard key={product.id} product={product} />
             ))}
@@ -84,7 +84,7 @@ export default function Page() {
           <SectionTitle title="Latest Products" />
         </div>
         {!isLoading && !isError && (
-          <div className="m-auto grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5">
+          <div className="m-auto gridder-2">
             {latestProducts?.map((product: any) => (
               <ProductCard key={product.id} product={product} />
             ))}
@@ -97,7 +97,7 @@ export default function Page() {
           <SectionTitle title="Top Shops" />
         </div>
         {!isShopLoading && !isShopError && (
-          <div className="m-auto grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5">
+          <div className="m-auto gridder-2">
             {shops?.map((shop: any) => (
               <ShopCard key={shop.id} shop={shop} />
             ))}

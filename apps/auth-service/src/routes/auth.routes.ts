@@ -2,16 +2,20 @@ import express, { Router } from "express";
 import {
   connectBank,
   createShop,
+  createUserAddress,
+  deleteUserAddress,
   followShop,
   getFollowedShops,
   getSeller,
   getShopFollowers,
   getUser,
+  getUserAddresses,
   refreshTokenAuth,
   sellerLogin,
   sellerRegister,
   sellerVerify,
   unfollowShop,
+  updateUserAddress,
   userForgotPassword,
   userLogin,
   userRegister,
@@ -33,9 +37,13 @@ authroute.get("/user-logged-in", isAuth, getUser);
 authroute.post("/forgot-password-user", userForgotPassword);
 authroute.post("/reset-password-user", userResetPassword);
 authroute.post("/verify-forgot-password-user", verifyUserPassword);
-authroute.post("/follow", isAuth, followShop);
-authroute.post("/unfollow", isAuth, unfollowShop);
+authroute.post("/follow-shop", isAuth, followShop);
+authroute.post("/unfollow-shop", isAuth, unfollowShop);
 authroute.get("/my-shops", isAuth, getFollowedShops);
+authroute.post("/user-create-address", isAuth, createUserAddress);
+authroute.put("/user-update-address/:id", isAuth, updateUserAddress);
+authroute.delete("/user-delete-address/:id", isAuth, deleteUserAddress);
+authroute.get("/get-user-addresses", isAuth, getUserAddresses);
 
 //both users & sellers
 authroute.post("/refresh-token", refreshTokenAuth);

@@ -1,15 +1,17 @@
 "use client";
+import { useQuery } from "@tanstack/react-query";
 import useDeviceTracking from "apps/user-ui/src/hooks/useDeviceTracking";
 import useLocationTracking from "apps/user-ui/src/hooks/useLocationTracking";
 import useUser from "apps/user-ui/src/hooks/useUser";
 import TitleBreadCrumbs from "apps/user-ui/src/shared/components/title-bread-crumbs";
 import { useStore } from "apps/user-ui/src/store";
+import axiosInstance from "apps/user-ui/src/utils/axiosInstance";
 
 import { Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const CartPage = () => {
   const user = useUser();
@@ -70,6 +72,23 @@ const CartPage = () => {
       setDiscountAmount(0);
     }
   };
+  const { data: addresses } = useQuery({
+    queryKey: ["shipping-addressess"],
+    queryFn: async () => {
+      const res = await axiosInstance("/api/auth/get-user-addresses");
+      return res.data?.addresses;
+    },
+    staleTime: 1000 * 60 * 30,
+  });
+
+  useEffect(() => {
+    if (addresses?.length > 0 && !selectedAddressId) {
+      const defaultAddr = addresses.find((addr: any) => addr?.isDefault);
+      if (defaultAddr) {
+        setSelectedAddressId(defaultAddr?.id);
+      }
+    }
+  }, [addresses, selectedAddressId]);
 
   return (
     <div className="w-full bg-white min-h-screen p-4">
@@ -245,19 +264,27 @@ const CartPage = () => {
                   <h4 className="mb-[7px] font-medium text-base">
                     Select Shipping Address
                   </h4>
-                  <select
-                    onChange={(e: any) => setSelectedAddressId(e.target.value)}
-                    value={selectedAddressId}
-                    className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value={"home"}>Home - New York - USA</option>
-                    <option value={"shelbyville"}>
-                      456 Elm St, Shelbyville, IL
-                    </option>
-                    <option value={"capitalcity"}>
-                      789 Oak St, Capital City, IL
-                    </option>
-                  </select>
+                  {addresses?.length !== 0 && (
+                    <select
+                      onChange={(e: any) =>
+                        setSelectedAddressId(e.target.value)
+                      }
+                      value={selectedAddressId}
+                      className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      {addresses?.map((address: any) => (
+                        <option key={address?.id} value={address?.id}>
+                          {address?.label} - {address?.city} -{" "}
+                          {address?.country}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  {addresses?.length === 0 && (
+                    <p className="text-sm text-slate-800">
+                      Please add an address from profile to create order!
+                    </p>
+                  )}
                 </div>
                 <hr className="my-4 text-slate-200" />
                 <div className="mb-4">

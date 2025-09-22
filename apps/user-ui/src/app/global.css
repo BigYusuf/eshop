@@ -40,3 +40,12 @@ body {
 .input-2 {
   @apply w-full border outline-none bg-transparent rounded-md text-white transition-colors;
 }
+.gridder-1 {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4;
+}
+.gridder-2 {
+  @apply grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5;
+}
+.gridder-3 {
+  @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3;
+}

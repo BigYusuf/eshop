@@ -1,5 +1,5 @@
 "use client";
-import { useQuery } from "@tanstack/react-query";
+
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
@@ -150,7 +150,7 @@ const ShopsPage = () => {
           {/* Shop grid */}
           <div className="flex-1 px-2 lg:px-3">
             {isShopLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-2">
+              <div className="gridder-1 gap-2">
                 {Array.from({ length: 10 }).map((_, index) => (
                   <div
                     key={index}
@@ -159,7 +159,7 @@ const ShopsPage = () => {
                 ))}
               </div>
             ) : shops?.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-2">
+              <div className="gridder-1 gap-2">
                 {shops.map((shop) => (
                   <ShopCard key={shop?.id} shop={shop} />
                 ))}

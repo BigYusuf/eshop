@@ -274,7 +274,7 @@ const Products = () => {
           {/* Product grid */}
           <div className="flex-1 px-2 lg:px-3">
             {isProducLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-2">
+              <div className="gridder-1 gap-2">
                 {Array.from({ length: 10 }).map((_, index) => (
                   <div
                     key={index}
@@ -283,7 +283,7 @@ const Products = () => {
                 ))}
               </div>
             ) : products?.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-2">
+              <div className="gridder-1 gap-2">
                 {products.map((product) => (
                   <ProductCard key={product?.id} product={product} />
                 ))}

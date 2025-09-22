@@ -56,7 +56,10 @@ export class User extends Model<
   }
   static associate(models: any) {
     User.hasOne(models.Image, { as: "avatar" });
-    User.hasMany(models.ShopReview, { as: "shop_reviews" });
-    User.hasMany(models.UserAnalytics, { foreignKey: "userId", as: "analytics" });
+    User.hasMany(models.UserAnalytics, {
+      foreignKey: "userId",
+      as: "analytics",
+    });
+    User.hasMany(models.Address, { foreignKey: "userId", as: "addresses" });
   }
 }
